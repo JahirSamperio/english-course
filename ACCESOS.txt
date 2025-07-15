@@ -1,0 +1,61 @@
+🔐 ACCESOS AL SISTEMA DE INGLÉS
+=====================================
+
+📧 ESTUDIANTES:
+- Email: john.student@email.com
+- Password: password123
+- Tipo: estudiante
+- Nivel: Beginner
+
+- Email: emma.student@email.com  
+- Password: password123
+- Tipo: estudiante
+- Nivel: Intermediate
+
+- Email: michael.student@email.com
+- Password: password123
+- Tipo: estudiante
+- Nivel: Advanced
+
+👨‍👩‍👧‍👦 PADRES:
+- Email: sarah.parent@email.com
+- Password: password123
+- Tipo: padre
+
+- Email: robert.parent@email.com
+- Password: password123
+- Tipo: padre
+
+👩‍🏫 PROFESORES:
+- Email: jennifer.teacher@email.com
+- Password: password123
+- Tipo: profesor
+- Especialidad: English Grammar and Conversation
+
+- Email: david.teacher@email.com
+- Password: password123
+- Tipo: profesor
+- Especialidad: English Literature and Writing
+
+🌐 URL DE ACCESO:
+http://localhost/englishdemo/login.php
+
+📊 BASE DE DATOS:
+- Host: localhost
+- Database: english_learning_system
+- User: root
+- Password: root
+
+🎯 EJERCICIOS DISPONIBLES:
+- Grammar exercises (Beginner to Advanced)
+- Vocabulary quizzes
+- Listening comprehension
+- Writing tasks
+- Business English scenarios
+
+📈 SISTEMA DE PUNTOS:
+- Ejercicios básicos: 5-10 puntos
+- Ejercicios intermedios: 15-20 puntos
+- Ejercicios avanzados: 25+ puntos
+- Sistema de racha diaria
+- Niveles: Beginner → Elementary → Intermediate → Upper-Intermediate → Advanced

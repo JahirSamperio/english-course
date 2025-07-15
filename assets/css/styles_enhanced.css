@@ -1,0 +1,290 @@
+/* Estilos mejorados con animaciones y elementos visuales */
+@import url('styles_kids.css');
+
+/* Mascota educativa SVG animada */
+.mascot-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    animation: float 3s ease-in-out infinite;
+}
+
+.mascot {
+    width: 80px;
+    height: 80px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.mascot:hover {
+    transform: scale(1.1);
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Animaciones de respuesta correcta */
+@keyframes correctAnswer {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.1) rotate(5deg); }
+    50% { transform: scale(1.2) rotate(-5deg); }
+    75% { transform: scale(1.1) rotate(3deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes incorrectAnswer {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    50% { transform: translateX(10px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+
+@keyframes celebration {
+    0% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(1.2) rotate(10deg); }
+    50% { transform: scale(1.3) rotate(-10deg); }
+    75% { transform: scale(1.2) rotate(5deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+/* Efectos de partículas */
+@keyframes confetti {
+    0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+.confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    background: #FFE066;
+    animation: confetti 3s linear infinite;
+    z-index: 999;
+}
+
+.confetti:nth-child(2) { background: #FF6B6B; animation-delay: 0.5s; left: 20%; }
+.confetti:nth-child(3) { background: #4ECDC4; animation-delay: 1s; left: 40%; }
+.confetti:nth-child(4) { background: #45B7D1; animation-delay: 1.5s; left: 60%; }
+.confetti:nth-child(5) { background: #96CEB4; animation-delay: 2s; left: 80%; }
+
+/* Transiciones suaves para ejercicios */
+.exercise-card {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.exercise-card.correct {
+    animation: correctAnswer 0.8s ease-in-out;
+    box-shadow: 0 0 30px rgba(0, 184, 148, 0.6);
+}
+
+.exercise-card.incorrect {
+    animation: incorrectAnswer 0.6s ease-in-out;
+    box-shadow: 0 0 30px rgba(255, 107, 107, 0.6);
+}
+
+/* Botones con efectos mejorados */
+.option-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.option-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+}
+
+.option-btn:hover::before {
+    left: 100%;
+}
+
+.option-btn.correct {
+    animation: celebration 1s ease-in-out;
+    background: linear-gradient(45deg, #00B894, #00CEC9) !important;
+}
+
+.option-btn.incorrect {
+    animation: incorrectAnswer 0.5s ease-in-out;
+    background: linear-gradient(45deg, #FF6B6B, #FD79A8) !important;
+}
+
+/* Efectos de progreso */
+.progress-fill {
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-image: linear-gradient(
+        -45deg,
+        rgba(255, 255, 255, .2) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, .2) 50%,
+        rgba(255, 255, 255, .2) 75%,
+        transparent 75%,
+        transparent
+    );
+    background-size: 50px 50px;
+    animation: move 2s linear infinite;
+}
+
+@keyframes move {
+    0% { background-position: 0 0; }
+    100% { background-position: 50px 50px; }
+}
+
+/* Iconos animados */
+.animated-icon {
+    display: inline-block;
+    animation: bounce 2s infinite;
+}
+
+.animated-icon.star {
+    animation: twinkle 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+    0% { transform: scale(1) rotate(0deg); opacity: 0.8; }
+    100% { transform: scale(1.2) rotate(180deg); opacity: 1; }
+}
+
+.animated-icon.heart {
+    animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+    0% { transform: scale(1); }
+    14% { transform: scale(1.3); }
+    28% { transform: scale(1); }
+    42% { transform: scale(1.3); }
+    70% { transform: scale(1); }
+}
+
+/* Efectos de hover mejorados */
+.card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+/* Animación de entrada para elementos */
+.fade-in {
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.6s ease-out;
+}
+
+@keyframes slideInLeft {
+    0% { opacity: 0; transform: translateX(-50px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+.slide-in-right {
+    animation: slideInRight 0.6s ease-out;
+}
+
+@keyframes slideInRight {
+    0% { opacity: 0; transform: translateX(50px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+/* Efectos de texto */
+.text-glow {
+    text-shadow: 0 0 10px rgba(255, 230, 102, 0.8);
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { text-shadow: 0 0 10px rgba(255, 230, 102, 0.8); }
+    to { text-shadow: 0 0 20px rgba(255, 230, 102, 1), 0 0 30px rgba(255, 230, 102, 1); }
+}
+
+/* Burbujas decorativas */
+.bubble {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.6;
+    animation: bubble 4s linear infinite;
+}
+
+@keyframes bubble {
+    0% { transform: translateY(100vh) scale(0); }
+    10% { transform: translateY(90vh) scale(0.2); }
+    90% { transform: translateY(-10vh) scale(1); }
+    100% { transform: translateY(-20vh) scale(0); }
+}
+
+.bubble:nth-child(1) { left: 10%; width: 20px; height: 20px; background: rgba(255, 230, 102, 0.7); animation-delay: 0s; }
+.bubble:nth-child(2) { left: 30%; width: 15px; height: 15px; background: rgba(255, 107, 107, 0.7); animation-delay: 1s; }
+.bubble:nth-child(3) { left: 50%; width: 25px; height: 25px; background: rgba(78, 205, 196, 0.7); animation-delay: 2s; }
+.bubble:nth-child(4) { left: 70%; width: 18px; height: 18px; background: rgba(69, 183, 209, 0.7); animation-delay: 3s; }
+.bubble:nth-child(5) { left: 90%; width: 22px; height: 22px; background: rgba(150, 206, 180, 0.7); animation-delay: 0.5s; }
+
+/* Efectos de sonido visual */
+.sound-wave {
+    display: inline-block;
+    width: 4px;
+    height: 20px;
+    background: #4ECDC4;
+    margin: 0 2px;
+    animation: soundWave 1s ease-in-out infinite;
+}
+
+.sound-wave:nth-child(2) { animation-delay: 0.1s; }
+.sound-wave:nth-child(3) { animation-delay: 0.2s; }
+.sound-wave:nth-child(4) { animation-delay: 0.3s; }
+
+@keyframes soundWave {
+    0%, 100% { height: 20px; }
+    50% { height: 5px; }
+}
+
+/* Responsive para animaciones */
+@media (max-width: 768px) {
+    .mascot-container {
+        bottom: 10px;
+        right: 10px;
+    }
+    
+    .mascot {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .confetti {
+        width: 8px;
+        height: 8px;
+    }
+}
+
+/* Reducir animaciones para usuarios que prefieren menos movimiento */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
