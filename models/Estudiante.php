@@ -40,13 +40,32 @@ class Estudiante {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     
-    public function getAll() {
+    public function getAll($page = 1, $limit = 5) {
+        $offset = ($page - 1) * $limit;
+        $stmt = $this->db->prepare("
+            SELECT e.*, u.nombre, u.email, p.ejercicios_completados, p.porcentaje, p.nivel_actual, p.puntos_acumulados 
+            FROM Estudiante e 
+            JOIN Usuario u ON e.usuario_id = u.id 
+            LEFT JOIN Progreso p ON e.id = p.estudiante_id 
+            ORDER BY u.nombre, e.grado
+            LIMIT $limit OFFSET $offset
+        ");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getCount() {
+        $stmt = $this->db->query("SELECT COUNT(*) as total FROM Estudiante");
+        return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    }
+    
+    public function getAllSimple() {
         $stmt = $this->db->query("
             SELECT e.*, u.nombre, u.email, p.ejercicios_completados, p.porcentaje, p.nivel_actual, p.puntos_acumulados 
             FROM Estudiante e 
             JOIN Usuario u ON e.usuario_id = u.id 
             LEFT JOIN Progreso p ON e.id = p.estudiante_id 
-            ORDER BY e.grado, u.nombre
+            ORDER BY u.nombre, e.grado
         ");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }

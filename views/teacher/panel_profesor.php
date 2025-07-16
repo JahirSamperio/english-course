@@ -17,15 +17,29 @@
         }
         .panel-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
             margin: 20px 0;
+        }
+        @media (max-width: 768px) {
+            .panel-grid {
+                grid-template-columns: 1fr;
+            }
         }
         .panel-card {
             background: white;
             border-radius: 20px;
             padding: 25px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            height: fit-content;
+            display: flex;
+            flex-direction: column;
+        }
+        .panel-card h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+            text-align: center;
         }
         .form-group {
             margin-bottom: 15px;
@@ -50,9 +64,13 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
+            width: 100%;
+            margin-top: auto;
+            text-align: center;
         }
         .btn-submit:hover {
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.3);
         }
         .student-list {
             max-height: 200px;
@@ -70,6 +88,26 @@
             margin-right: 10px;
             width: auto;
         }
+        .notification {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: bold;
+            text-align: center;
+            animation: slideIn 0.5s ease;
+        }
+        .notification.success {
+            background: linear-gradient(45deg, #00B894, #00CEC9);
+            color: white;
+        }
+        .notification.error {
+            background: linear-gradient(45deg, #FF6B6B, #FD79A8);
+            color: white;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -78,6 +116,13 @@
             <h1>🎯 Panel de Control del Profesor</h1>
             <p>Gestiona planes de estudio, temas y asignaciones</p>
         </div>
+        
+        <?php if (isset($_SESSION['notification'])): ?>
+            <div class="notification <?php echo $_SESSION['notification']['type']; ?>" id="notification">
+                <?php echo $_SESSION['notification']['message']; ?>
+            </div>
+            <?php unset($_SESSION['notification']); ?>
+        <?php endif; ?>
 
         <nav class="nav-menu">
             <a href="/englishdemo/?controller=teacher&action=dashboard" class="nav-btn exercises">
@@ -114,6 +159,9 @@
                     </div>
                     <button type="submit" class="btn-submit">✅ Crear Plan</button>
                 </form>
+                <a href="/englishdemo/?controller=teacher&action=managePlans" class="btn-submit" style="display: block; text-decoration: none; margin-top: 10px; background: linear-gradient(45deg, #FF6B6B, #FD79A8);">
+                    📋 Gestionar Planes
+                </a>
             </div>
 
             <!-- Crear Tema -->
@@ -143,6 +191,21 @@
                     </div>
                     <button type="submit" class="btn-submit">✅ Crear Tema</button>
                 </form>
+                <a href="/englishdemo/?controller=teacher&action=manageTopics" class="btn-submit" style="display: block; text-decoration: none; margin-top: 10px; background: linear-gradient(45deg, #FF6B6B, #FD79A8);">
+                    📋 Gestionar Temas
+                </a>
+            </div>
+
+            <!-- Crear Ejercicio -->
+            <div class="panel-card">
+                <h3>🎯 Crear Ejercicio</h3>
+                <p style="text-align: center; color: #666; margin-bottom: 20px;">Diseña ejercicios interactivos para los estudiantes</p>
+                <a href="/englishdemo/?controller=teacher&action=createExercise" class="btn-submit" style="display: block; text-decoration: none; margin-top: auto;">
+                    📝 Crear Ejercicio
+                </a>
+                <a href="/englishdemo/?controller=teacher&action=manageExercises" class="btn-submit" style="display: block; text-decoration: none; margin-top: 10px; background: linear-gradient(45deg, #FF6B6B, #FD79A8);">
+                    📋 Gestionar Ejercicios
+                </a>
             </div>
 
             <!-- Asignar Plan a Estudiantes -->
@@ -165,7 +228,7 @@
                             <?php if(isset($estudiantes)): foreach($estudiantes as $estudiante): ?>
                                 <div class="student-item">
                                     <input type="checkbox" name="estudiantes[]" value="<?php echo $estudiante['id']; ?>">
-                                    <span><?php echo $estudiante['nombre'] ?? 'Estudiante ' . $estudiante['id']; ?> (Grado: <?php echo $estudiante['grado']; ?>)</span>
+                                    <span><strong><?php echo $estudiante['nombre'] ?? 'Sin nombre'; ?></strong> - Grado: <?php echo $estudiante['grado']; ?> - Nivel: <?php echo $estudiante['nivel_actual'] ?? 'Beginner'; ?></span>
                                 </div>
                             <?php endforeach; endif; ?>
                         </div>
@@ -210,7 +273,36 @@
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Paginación -->
+            <?php if ($total_pages > 1): ?>
+                <div class="pagination" style="text-align: center; margin-top: 20px;">
+                    <?php if ($current_page > 1): ?>
+                        <a href="?controller=teacher&action=panel&page=<?php echo $current_page - 1; ?>" class="btn-submit" style="margin: 0 5px; display: inline-block; text-decoration: none;">← Anterior</a>
+                    <?php endif; ?>
+                    
+                    <span style="margin: 0 15px; font-weight: bold;">Página <?php echo $current_page; ?> de <?php echo $total_pages; ?></span>
+                    
+                    <?php if ($current_page < $total_pages): ?>
+                        <a href="?controller=teacher&action=panel&page=<?php echo $current_page + 1; ?>" class="btn-submit" style="margin: 0 5px; display: inline-block; text-decoration: none;">Siguiente →</a>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
+    
+    <script>
+        // Auto-hide notification after 3 seconds
+        const notification = document.getElementById('notification');
+        if (notification) {
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateY(-20px)';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+    </script>
 </body>
 </html>

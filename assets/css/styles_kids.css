@@ -7,17 +7,25 @@
 
 body {
     font-family: 'Comic Sans MS', cursive, sans-serif;
-    background: linear-gradient(135deg, #FFE066, #FF6B6B, #4ECDC4, #45B7D1);
-    background-size: 400% 400%;
-    animation: gradientShift 8s ease infinite;
+    background: #e0f2f1;
     min-height: 100vh;
     color: #2C3E50;
 }
 
-@keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+/* Animación deshabilitada para evitar distracción */
+
+/* Estados de progreso deshabilitados para mantener consistencia */
+body.progress-1,
+body.progress-2,
+body.progress-3,
+body.completed {
+    background: #e0f2f1;
+}
+
+@keyframes completionGlow {
+    0% { filter: brightness(1); }
+    50% { filter: brightness(1.05); }
+    100% { filter: brightness(1); }
 }
 
 .container {
@@ -30,22 +38,23 @@ body {
 .header {
     text-align: center;
     margin-bottom: 30px;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.95);
     border-radius: 25px;
     padding: 20px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 150, 136, 0.15);
+    border: 2px solid rgba(0, 150, 136, 0.1);
 }
 
 .header h1 {
     font-size: 3rem;
-    color: #FF6B6B;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    color: #00695c;
+    text-shadow: 2px 2px 4px rgba(0, 105, 92, 0.2);
     margin-bottom: 10px;
 }
 
 .header p {
     font-size: 1.5rem;
-    color: #4ECDC4;
+    color: #00897b;
     font-weight: bold;
 }
 
@@ -59,7 +68,7 @@ body {
 }
 
 .nav-btn {
-    background: linear-gradient(45deg, #FF6B6B, #FFE066);
+    background: linear-gradient(45deg, #26a69a, #4db6ac);
     border: none;
     border-radius: 50px;
     padding: 15px 30px;
@@ -70,7 +79,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 20px rgba(38, 166, 154, 0.3);
     transition: all 0.3s ease;
     cursor: pointer;
 }
@@ -80,9 +89,9 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-.nav-btn.exercises { background: linear-gradient(45deg, #4ECDC4, #45B7D1); }
-.nav-btn.progress { background: linear-gradient(45deg, #96CEB4, #FFEAA7); }
-.nav-btn.logout { background: linear-gradient(45deg, #FD79A8, #FDCB6E); }
+.nav-btn.exercises { background: linear-gradient(45deg, #00897b, #26a69a); }
+.nav-btn.progress { background: linear-gradient(45deg, #4db6ac, #80cbc4); }
+.nav-btn.logout { background: linear-gradient(45deg, #ff7043, #ffab91); }
 
 /* Tarjetas principales */
 .cards-grid {
@@ -93,19 +102,19 @@ body {
 }
 
 .card {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.98);
     border-radius: 25px;
     padding: 30px;
     text-align: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 30px rgba(0, 150, 136, 0.12);
     transition: all 0.3s ease;
-    border: 4px solid transparent;
+    border: 2px solid rgba(77, 182, 172, 0.1);
 }
 
 .card:hover {
     transform: translateY(-10px) rotate(1deg);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
-    border-color: #FFE066;
+    box-shadow: 0 15px 40px rgba(0, 150, 136, 0.2);
+    border-color: #4db6ac;
 }
 
 .card-icon {
@@ -129,7 +138,7 @@ body {
 
 /* Botones grandes */
 .big-btn {
-    background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+    background: linear-gradient(45deg, #26a69a, #4db6ac);
     border: none;
     border-radius: 50px;
     padding: 15px 40px;
@@ -138,7 +147,7 @@ body {
     color: white;
     text-decoration: none;
     display: inline-block;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 20px rgba(38, 166, 154, 0.3);
     transition: all 0.3s ease;
     cursor: pointer;
     text-transform: uppercase;
@@ -149,9 +158,9 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-.big-btn.start { background: linear-gradient(45deg, #00B894, #00CEC9); }
-.big-btn.practice { background: linear-gradient(45deg, #6C5CE7, #A29BFE); }
-.big-btn.review { background: linear-gradient(45deg, #FD79A8, #FDCB6E); }
+.big-btn.start { background: linear-gradient(45deg, #00695c, #00897b); }
+.big-btn.practice { background: linear-gradient(45deg, #26a69a, #4db6ac); }
+.big-btn.review { background: linear-gradient(45deg, #80cbc4, #a7ffeb); }
 
 /* Sección de progreso */
 .progress-section {
@@ -171,7 +180,7 @@ body {
 }
 
 .stat-item {
-    background: linear-gradient(45deg, #FFE066, #FF6B6B);
+    background: linear-gradient(45deg, #4db6ac, #26a69a);
     border-radius: 20px;
     padding: 20px;
     color: white;
@@ -200,7 +209,7 @@ body {
 }
 
 .progress-fill {
-    background: linear-gradient(45deg, #00B894, #00CEC9);
+    background: linear-gradient(45deg, #00897b, #4db6ac);
     height: 100%;
     border-radius: 25px;
     transition: width 0.5s ease;

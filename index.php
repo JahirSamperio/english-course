@@ -41,6 +41,18 @@ switch ($controller) {
             case 'interactiveExercises':
                 $ctrl->interactiveExercises($_SESSION['estudiante_id'], $_GET['nivel'] ?? 'Beginner', $_GET['tema_id'] ?? null);
                 break;
+            case 'startTopic':
+                $ctrl->startTopic($_SESSION['estudiante_id']);
+                break;
+            case 'startUnit':
+                $ctrl->startUnit($_SESSION['estudiante_id']);
+                break;
+            case 'startEvaluation':
+                $ctrl->startEvaluation($_SESSION['estudiante_id']);
+                break;
+            case 'viewContent':
+                $ctrl->viewContent($_SESSION['estudiante_id']);
+                break;
             default:
                 $ctrl->dashboard($_SESSION['estudiante_id']);
                 break;
@@ -76,6 +88,36 @@ switch ($controller) {
                 break;
             case 'assignPlan':
                 $ctrl->assignPlan();
+                break;
+            case 'createExercise':
+                $ctrl->createExercise();
+                break;
+            case 'managePlans':
+                $ctrl->managePlans();
+                break;
+            case 'manageTopics':
+                $ctrl->manageTopics();
+                break;
+            case 'manageExercises':
+                $ctrl->manageExercises();
+                break;
+            case 'editPlan':
+                $ctrl->editPlan($_GET['id'] ?? null);
+                break;
+            case 'editTopic':
+                $ctrl->editTopic($_GET['id'] ?? null);
+                break;
+            case 'editExercise':
+                $ctrl->editExercise($_GET['id'] ?? null);
+                break;
+            case 'deletePlan':
+                $ctrl->deletePlan($_GET['id'] ?? null);
+                break;
+            case 'deleteTopic':
+                $ctrl->deleteTopic($_GET['id'] ?? null);
+                break;
+            case 'deleteExercise':
+                $ctrl->deleteExercise($_GET['id'] ?? null);
                 break;
             default:
                 $ctrl->dashboard();

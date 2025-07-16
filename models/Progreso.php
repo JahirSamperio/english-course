@@ -38,9 +38,16 @@ class Progreso {
         ]);
     }
     
-    public function getAll() {
-        $stmt = $this->db->query("SELECT p.*, u.nombre, e.grado FROM Progreso p JOIN Estudiante e ON p.estudiante_id = e.id JOIN Usuario u ON e.usuario_id = u.id");
+    public function getAll($page = 1, $limit = 5) {
+        $offset = ($page - 1) * $limit;
+        $stmt = $this->db->prepare("SELECT p.*, u.nombre, e.grado FROM Progreso p JOIN Estudiante e ON p.estudiante_id = e.id JOIN Usuario u ON e.usuario_id = u.id ORDER BY u.nombre LIMIT $limit OFFSET $offset");
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getCount() {
+        $stmt = $this->db->query("SELECT COUNT(*) as total FROM Progreso");
+        return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     }
     
     public function getByFilters($nivel = null, $grado = null, $min_progreso = null) {

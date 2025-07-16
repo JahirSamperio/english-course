@@ -8,7 +8,19 @@ class Tema {
         $this->db = Database::getInstance()->getConnection();
     }
     
-    public function getAll() {
+    public function getAll($page = 1, $limit = 10) {
+        $offset = ($page - 1) * $limit;
+        $stmt = $this->db->prepare("SELECT * FROM Tema ORDER BY nivel_requerido, nombre LIMIT $limit OFFSET $offset");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getCount() {
+        $stmt = $this->db->query("SELECT COUNT(*) as total FROM Tema");
+        return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    }
+    
+    public function getAllSimple() {
         $stmt = $this->db->query("SELECT * FROM Tema ORDER BY nivel_requerido, nombre");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -47,6 +59,23 @@ class Tema {
         $stmt = $this->db->prepare("SELECT * FROM Tema WHERE id = ?");
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+    public function update($id, $data) {
+        $stmt = $this->db->prepare("UPDATE Tema SET nombre = ?, descripcion = ?, nivel_requerido = ?, contenidos = ?, duracion_estimada = ? WHERE id = ?");
+        return $stmt->execute([
+            $data['nombre'],
+            $data['descripcion'],
+            $data['nivel_requerido'],
+            $data['contenidos'],
+            $data['duracion_estimada'],
+            $id
+        ]);
+    }
+    
+    public function delete($id) {
+        $stmt = $this->db->prepare("DELETE FROM Tema WHERE id = ?");
+        return $stmt->execute([$id]);
     }
     
     public function getByFilters($nivel = null, $duracion_min = null, $duracion_max = null) {

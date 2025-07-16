@@ -105,12 +105,7 @@
                 </div>
             </div>
             
-            <div class="card">
-                <span class="card-icon">📋</span>
-                <h3>Recent Tests / Pruebas Recientes</h3>
-                <p>Your latest results / Tus últimos resultados</p>
-                <p>Check your progress in exercises</p>
-            </div>
+
         </div>
     </div>
     

@@ -8,7 +8,19 @@ class PlanEstudios {
         $this->db = Database::getInstance()->getConnection();
     }
     
-    public function getAll() {
+    public function getAll($page = 1, $limit = 10) {
+        $offset = ($page - 1) * $limit;
+        $stmt = $this->db->prepare("SELECT * FROM Plan_de_estudios ORDER BY nivel, titulo LIMIT $limit OFFSET $offset");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getCount() {
+        $stmt = $this->db->query("SELECT COUNT(*) as total FROM Plan_de_estudios");
+        return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    }
+    
+    public function getAllSimple() {
         $stmt = $this->db->query("SELECT * FROM Plan_de_estudios ORDER BY nivel, titulo");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -28,6 +40,22 @@ class PlanEstudios {
             $data['duracion_semanas'],
             $data['unidades'] ?? ''
         ]);
+    }
+    
+    public function update($id, $data) {
+        $stmt = $this->db->prepare("UPDATE Plan_de_estudios SET titulo = ?, descripcion = ?, nivel = ?, duracion_semanas = ? WHERE id = ?");
+        return $stmt->execute([
+            $data['titulo'],
+            $data['descripcion'],
+            $data['nivel'],
+            $data['duracion_semanas'],
+            $id
+        ]);
+    }
+    
+    public function delete($id) {
+        $stmt = $this->db->prepare("DELETE FROM Plan_de_estudios WHERE id = ?");
+        return $stmt->execute([$id]);
     }
     
     public function getAssignedToStudent($estudiante_id) {

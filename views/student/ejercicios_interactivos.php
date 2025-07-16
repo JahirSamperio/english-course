@@ -116,34 +116,7 @@
             <p>Practice and improve your English skills!</p>
         </div>
         
-        <!-- Filtros -->
-        <div class="card">
-            <h3>🔍 Filter Exercises</h3>
-            <form method="GET" style="display: flex; gap: 15px; align-items: end; flex-wrap: wrap;">
-                <div>
-                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Level:</label>
-                    <select name="nivel" style="padding: 10px; border: 2px solid #4ECDC4; border-radius: 10px;">
-                        <option value="Beginner" <?php echo ($estudiante['grado'] ?? 'Beginner') == 'Beginner' ? 'selected' : ''; ?>>Beginner</option>
-                        <option value="Elementary" <?php echo ($estudiante['grado'] ?? 'Beginner') == 'Elementary' ? 'selected' : ''; ?>>Elementary</option>
-                        <option value="Intermediate" <?php echo ($estudiante['grado'] ?? 'Beginner') == 'Intermediate' ? 'selected' : ''; ?>>Intermediate</option>
-                        <option value="Upper-Intermediate" <?php echo ($estudiante['grado'] ?? 'Beginner') == 'Upper-Intermediate' ? 'selected' : ''; ?>>Upper-Intermediate</option>
-                        <option value="Advanced" <?php echo ($estudiante['grado'] ?? 'Beginner') == 'Advanced' ? 'selected' : ''; ?>>Advanced</option>
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Topic:</label>
-                    <select name="tema_id" style="padding: 10px; border: 2px solid #4ECDC4; border-radius: 10px;">
-                        <option value="">All Topics</option>
-                        <?php foreach($temas as $tema): ?>
-                            <option value="<?php echo $tema['id']; ?>" <?php echo ($_GET['tema_id'] ?? '') == $tema['id'] ? 'selected' : ''; ?>>
-                                <?php echo $tema['nombre']; ?> (<?php echo $tema['nivel_requerido']; ?>)
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <button type="submit" class="big-btn start">Filter</button>
-            </form>
-        </div>
+
 
         <!-- Indicador de Progreso -->
         <div class="progress-indicator">
@@ -343,7 +316,7 @@
             showFinalCelebration();
             
             // Enviar resultados al servidor
-            fetch('/englishdemo/controllers/guardar_resultados.php', {
+            fetch('controllers/guardar_resultados.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -356,6 +329,7 @@
             })
             .then(response => response.json())
             .then(data => {
+                console.log('Server response:', data);
                 if (data.success) {
                     setTimeout(() => {
                         const accuracy = Math.round((correctAnswers/totalExercises)*100);
@@ -372,7 +346,20 @@
                         alert(message);
                         window.location.href = '?controller=student&action=dashboard';
                     }, 2000);
+                } else {
+                    console.error('Error saving results:', data);
+                    alert('Error saving results. Redirecting anyway...');
+                    setTimeout(() => {
+                        window.location.href = '?controller=student&action=dashboard';
+                    }, 1000);
                 }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                alert('Network error. Redirecting anyway...');
+                setTimeout(() => {
+                    window.location.href = '?controller=student&action=dashboard';
+                }, 1000);
             });
         }
         

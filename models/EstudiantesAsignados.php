@@ -23,16 +23,24 @@ class EstudiantesAsignados {
         return false;
     }
     
-    public function getAll() {
-        $stmt = $this->db->query("
+    public function getAll($page = 1, $limit = 5) {
+        $offset = ($page - 1) * $limit;
+        $stmt = $this->db->prepare("
             SELECT ea.*, u.nombre as estudiante_nombre, pe.titulo as plan_titulo, pe.nivel 
             FROM Estudiantes_asignados ea 
             JOIN Estudiante e ON ea.estudiante_id = e.id 
             JOIN Usuario u ON e.usuario_id = u.id 
             JOIN Plan_de_estudios pe ON ea.plan_estudios_id = pe.id 
             ORDER BY ea.fecha_asignacion DESC
+            LIMIT $limit OFFSET $offset
         ");
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getCount() {
+        $stmt = $this->db->query("SELECT COUNT(*) as total FROM Estudiantes_asignados");
+        return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     }
     
     public function getByStudentId($estudiante_id) {

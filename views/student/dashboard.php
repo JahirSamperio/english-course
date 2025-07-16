@@ -6,6 +6,12 @@
     <title><?php echo $page_title; ?> - English Learning</title>
     <link rel="stylesheet" href="/englishdemo/assets/css/styles_kids.css">
     <link rel="stylesheet" href="/englishdemo/assets/css/styles_enhanced.css">
+    <style>
+        body {
+            background: #e0f2f1 !important;
+            animation: none !important;
+        }
+    </style>
 </head>
 <body>
     <div class="mascot-container">
@@ -140,5 +146,6 @@
             }
         }
     </script>
+    <script src="/englishdemo/assets/js/progress-background.js"></script>
 </body>
 </html>

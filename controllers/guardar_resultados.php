@@ -1,89 +1,70 @@
 <?php
-session_start();
-require_once '../config/Database.php';
-$pdo = Database::getInstance()->getConnection();
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../models/Progreso.php';
 
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['tipo']) || $_SESSION['tipo'] !== 'estudiante') {
-    echo json_encode(['success' => false, 'error' => 'Not authenticated']);
-    exit();
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo json_encode(['success' => false, 'error' => 'Invalid method']);
+    exit;
 }
 
-$estudiante_id = $_SESSION['estudiante_id'];
+if (!isset($_SESSION['estudiante_id'])) {
+    echo json_encode(['success' => false, 'error' => 'No student session']);
+    exit;
+}
+
 $input = json_decode(file_get_contents('php://input'), true);
+$estudiante_id = $_SESSION['estudiante_id'];
+$totalCorrect = $input['totalCorrect'] ?? 0;
+$totalPoints = $input['totalPoints'] ?? 0;
+$totalExercises = count($input['results'] ?? []);
 
-if (!$input || !isset($input['results'])) {
-    echo json_encode(['success' => false, 'error' => 'Invalid data']);
-    exit();
-}
-
+// Obtener progreso actual
 try {
-    $pdo->beginTransaction();
-    
-    // Crear una evaluación general para esta sesión
-    $stmt = $pdo->prepare("INSERT INTO Evaluacion (titulo, descripcion, fecha, tiempo_limite, puntos_total, resultado, estudiante_id) VALUES (?, ?, CURDATE(), 30, ?, ?, ?)");
-    $stmt->execute([
-        'Interactive Exercise Session',
-        'Student practice session with interactive exercises',
-        $input['totalPoints'],
-        round(($input['totalCorrect'] / count($input['results'])) * 100, 2),
-        $estudiante_id
-    ]);
-    
-    $evaluacion_id = $pdo->lastInsertId();
-    
-    // Guardar cada resultado individual
-    foreach ($input['results'] as $result) {
-        $stmt = $pdo->prepare("INSERT INTO Resultado_de_evaluacion (calificaciones, comentarios, fecha_de_realizacion, evaluacion_id, ejercicio_id, respuesta_estudiante, es_correcta) VALUES (?, ?, NOW(), ?, ?, ?, ?)");
-        $stmt->execute([
-            $result['points'],
-            $result['isCorrect'] ? 'Correct answer' : 'Incorrect answer',
-            $evaluacion_id,
-            $result['exerciseId'],
-            $result['userAnswer'],
-            $result['isCorrect'] ? 1 : 0
-        ]);
-    }
-    
-    // Actualizar progreso del estudiante
-    $stmt = $pdo->prepare("UPDATE Progreso SET 
-        ejercicios_completados = ejercicios_completados + ?, 
-        ejercicios_correctos = ejercicios_correctos + ?, 
-        puntos_acumulados = puntos_acumulados + ?,
-        ultima_actividad = NOW()
-        WHERE estudiante_id = ?");
-    $stmt->execute([
-        count($input['results']),
-        $input['totalCorrect'],
-        $input['totalPoints'],
-        $estudiante_id
-    ]);
-    
-    // Recalcular porcentaje
-    $stmt = $pdo->prepare("UPDATE Progreso SET porcentaje = (ejercicios_correctos * 100.0 / ejercicios_completados) WHERE estudiante_id = ? AND ejercicios_completados > 0");
-    $stmt->execute([$estudiante_id]);
-    
-    // Actualizar racha si es necesario
-    $stmt = $pdo->prepare("SELECT DATE(ultima_actividad) as last_date FROM Progreso WHERE estudiante_id = ?");
-    $stmt->execute([$estudiante_id]);
-    $progreso = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if ($progreso && $progreso['last_date'] == date('Y-m-d')) {
-        $stmt = $pdo->prepare("UPDATE Progreso SET racha_dias = racha_dias + 1 WHERE estudiante_id = ?");
-        $stmt->execute([$estudiante_id]);
-    }
-    
-    $pdo->commit();
-    
-    echo json_encode([
-        'success' => true,
-        'message' => 'Results saved successfully',
-        'evaluacion_id' => $evaluacion_id
-    ]);
-    
+    $progresoModel = new Progreso();
+    $progreso_actual = $progresoModel->getByStudentId($estudiante_id);
 } catch (Exception $e) {
-    $pdo->rollBack();
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+    exit;
 }
+
+// Calcular nuevos valores
+$ejercicios_completados = ($progreso_actual['ejercicios_completados'] ?? 0) + $totalExercises;
+$ejercicios_correctos = ($progreso_actual['ejercicios_correctos'] ?? 0) + $totalCorrect;
+$puntos_acumulados = ($progreso_actual['puntos_acumulados'] ?? 0) + $totalPoints;
+$porcentaje = $ejercicios_completados > 0 ? round(($ejercicios_correctos / $ejercicios_completados) * 100, 2) : 0;
+
+// Actualizar racha
+$racha_dias = ($progreso_actual['racha_dias'] ?? 0) + 1;
+
+// Determinar nivel
+$nivel_actual = 'Beginner';
+if ($porcentaje >= 90) $nivel_actual = 'Advanced';
+elseif ($porcentaje >= 70) $nivel_actual = 'Intermediate';
+elseif ($porcentaje >= 50) $nivel_actual = 'Elementary';
+
+// Actualizar progreso
+$success = $progresoModel->updateProgress($estudiante_id, [
+    'ejercicios_completados' => $ejercicios_completados,
+    'ejercicios_correctos' => $ejercicios_correctos,
+    'porcentaje' => $porcentaje,
+    'puntos_acumulados' => $puntos_acumulados,
+    'racha_dias' => $racha_dias,
+    'nivel_actual' => $nivel_actual
+]);
+
+echo json_encode([
+    'success' => $success,
+    'debug' => [
+        'estudiante_id' => $estudiante_id,
+        'totalExercises' => $totalExercises,
+        'totalCorrect' => $totalCorrect,
+        'totalPoints' => $totalPoints,
+        'porcentaje' => $porcentaje
+    ]
+]);
 ?>

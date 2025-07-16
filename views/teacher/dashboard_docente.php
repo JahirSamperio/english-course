@@ -10,6 +10,12 @@
     <title>👩‍🏫 Panel del Docente</title>
     <link rel="stylesheet" href="/englishdemo/assets/css/styles_kids.css">
     <style>
+        body {
+            background: #e0f2f1 !important;
+            animation: none !important;
+        }
+    </style>
+    <style>
         .logout-btn {
             position: fixed;
             top: 20px;
@@ -131,13 +137,28 @@
             <div class="estudiantes-lista">
                 <?php if(isset($estudiantes)): foreach($estudiantes as $estudiante): ?>
                     <div class="estudiante-item">
-                        <strong>ID: <?php echo $estudiante['id']; ?></strong>
+                        <strong><?php echo $estudiante['nombre'] ?? 'Sin nombre'; ?></strong>
                         <span>Grado: <?php echo $estudiante['grado']; ?></span>
                         <span>Progreso: <?php echo $estudiante['porcentaje'] ?? 0; ?>%</span>
-                        <span>Nivel: <?php echo $estudiante['nivel_actual'] ?? 'Principiante'; ?></span>
+                        <span>Nivel: <?php echo $estudiante['nivel_actual'] ?? 'Beginner'; ?></span>
                     </div>
                 <?php endforeach; endif; ?>
             </div>
+            
+            <!-- Paginación -->
+            <?php if ($total_pages > 1): ?>
+                <div class="pagination" style="text-align: center; margin-top: 20px;">
+                    <?php if ($current_page > 1): ?>
+                        <a href="?controller=teacher&action=dashboard&page=<?php echo $current_page - 1; ?>" class="btn" style="margin: 0 5px;">← Anterior</a>
+                    <?php endif; ?>
+                    
+                    <span style="margin: 0 15px; font-weight: bold;">Página <?php echo $current_page; ?> de <?php echo $total_pages; ?></span>
+                    
+                    <?php if ($current_page < $total_pages): ?>
+                        <a href="?controller=teacher&action=dashboard&page=<?php echo $current_page + 1; ?>" class="btn" style="margin: 0 5px;">Siguiente →</a>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
         </div>
         
         <div class="card">

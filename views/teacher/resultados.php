@@ -182,6 +182,21 @@
                     <?php endif; ?>
                 </tbody>
             </table>
+            
+            <!-- Paginación -->
+            <?php if ($total_pages > 1): ?>
+                <div class="pagination" style="text-align: center; margin-top: 20px;">
+                    <?php if ($current_page > 1): ?>
+                        <a href="?controller=teacher&action=results&page=<?php echo $current_page - 1; ?>" class="btn" style="background: linear-gradient(45deg, #4ECDC4, #45B7D1); color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; margin: 0 5px;">← Anterior</a>
+                    <?php endif; ?>
+                    
+                    <span style="margin: 0 15px; font-weight: bold;">Página <?php echo $current_page; ?> de <?php echo $total_pages; ?></span>
+                    
+                    <?php if ($current_page < $total_pages): ?>
+                        <a href="?controller=teacher&action=results&page=<?php echo $current_page + 1; ?>" class="btn" style="background: linear-gradient(45deg, #4ECDC4, #45B7D1); color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; margin: 0 5px;">Siguiente →</a>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
         </div>
 
         <!-- Evaluaciones Recientes -->
@@ -232,6 +247,21 @@
                     <?php endif; ?>
                 </tbody>
             </table>
+            
+            <!-- Paginación para Evaluaciones -->
+            <?php if ($total_pages2 > 1): ?>
+                <div class="pagination" style="text-align: center; margin-top: 20px;">
+                    <?php if ($current_page2 > 1): ?>
+                        <a href="?controller=teacher&action=results&page=<?php echo $current_page; ?>&page2=<?php echo $current_page2 - 1; ?>" class="btn" style="background: linear-gradient(45deg, #FF6B6B, #FD79A8); color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; margin: 0 5px;">← Anterior</a>
+                    <?php endif; ?>
+                    
+                    <span style="margin: 0 15px; font-weight: bold;">Página <?php echo $current_page2; ?> de <?php echo $total_pages2; ?></span>
+                    
+                    <?php if ($current_page2 < $total_pages2): ?>
+                        <a href="?controller=teacher&action=results&page=<?php echo $current_page; ?>&page2=<?php echo $current_page2 + 1; ?>" class="btn" style="background: linear-gradient(45deg, #FF6B6B, #FD79A8); color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; margin: 0 5px;">Siguiente →</a>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </body>

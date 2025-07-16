@@ -41,18 +41,7 @@ class Ejercicio {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    public function create($data) {
-        $stmt = $this->db->prepare("INSERT INTO Ejercicio (titulo, contenido, respuesta_correcta, tipo, nivel, puntos, tema_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        return $stmt->execute([
-            $data['titulo'],
-            $data['contenido'],
-            $data['respuesta_correcta'],
-            $data['tipo'],
-            $data['nivel'],
-            $data['puntos'],
-            $data['tema_id']
-        ]);
-    }
+
     
     public function getById($id) {
         $stmt = $this->db->prepare("SELECT * FROM Ejercicio WHERE id = ?");
@@ -72,9 +61,61 @@ class Ejercicio {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    public function getAll() {
+    public function getByTemaId($tema_id) {
+        $stmt = $this->db->prepare("SELECT * FROM Ejercicio WHERE tema_id = ? ORDER BY titulo");
+        $stmt->execute([$tema_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getAll($page = 1, $limit = 10) {
+        $offset = ($page - 1) * $limit;
+        $stmt = $this->db->prepare("SELECT * FROM Ejercicio ORDER BY nivel, titulo LIMIT $limit OFFSET $offset");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getCount() {
+        $stmt = $this->db->query("SELECT COUNT(*) as total FROM Ejercicio");
+        return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    }
+    
+    public function getAllSimple() {
         $stmt = $this->db->query("SELECT * FROM Ejercicio ORDER BY nivel, titulo");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function create($data) {
+        $tema_id = empty($data['tema_id']) ? null : $data['tema_id'];
+        $stmt = $this->db->prepare("INSERT INTO Ejercicio (titulo, contenido, tipo, nivel, puntos, respuesta_correcta, tema_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        return $stmt->execute([
+            $data['titulo'],
+            $data['contenido'],
+            $data['tipo'],
+            $data['nivel'],
+            $data['puntos'],
+            $data['respuesta_correcta'],
+            $tema_id
+        ]);
+    }
+    
+    public function update($id, $data) {
+        $tema_id = empty($data['tema_id']) ? null : $data['tema_id'];
+        $stmt = $this->db->prepare("UPDATE Ejercicio SET titulo = ?, contenido = ?, tipo = ?, nivel = ?, puntos = ?, respuesta_correcta = ?, tema_id = ? WHERE id = ?");
+        return $stmt->execute([
+            $data['titulo'],
+            $data['contenido'],
+            $data['tipo'],
+            $data['nivel'],
+            $data['puntos'],
+            $data['respuesta_correcta'],
+            $tema_id,
+            $id
+        ]);
+    }
+    
+    public function delete($id) {
+        $stmt = $this->db->prepare("DELETE FROM Ejercicio WHERE id = ?");
+        return $stmt->execute([$id]);
     }
     
     public function getByFilters($nivel = null, $tema_id = null, $tipo = null) {

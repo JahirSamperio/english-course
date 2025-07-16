@@ -1,6 +1,11 @@
 /* Estilos mejorados con animaciones y elementos visuales */
 @import url('styles_kids.css');
 
+/* Forzar fondo verde menta en dashboard de estudiantes */
+body {
+    background: #e0f2f1 !important;
+}
+
 /* Mascota educativa SVG animada */
 .mascot-container {
     position: fixed;

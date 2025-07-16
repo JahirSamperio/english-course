@@ -12,12 +12,16 @@ class ParentController {
     }
     
     public function dashboard($padre_id) {
+        $page = $_GET['page'] ?? 1;
+        $limit = 5;
         $hijos = $this->hijoModel->getByParentId($padre_id);
-        $evaluaciones_hijos = $this->evaluacionModel->getByParentId($padre_id);
+        $evaluaciones_hijos = $this->evaluacionModel->getByParentId($padre_id, $page, $limit);
         
         $data = [
             'hijos' => $hijos,
             'evaluaciones_hijos' => $evaluaciones_hijos,
+            'current_page' => $page,
+            'total_pages' => ceil($this->evaluacionModel->getCountByParent($padre_id) / $limit),
             'page_title' => 'Parent Dashboard'
         ];
         

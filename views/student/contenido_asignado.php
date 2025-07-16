@@ -51,21 +51,21 @@
             <div class="card sparkle">
                 <span class="card-icon">📋</span>
                 <h3>Your Study Plan / Tu Plan de Estudios</h3>
-                <div style="background: linear-gradient(45deg, #4ECDC4, #45B7D1); color: white; padding: 20px; border-radius: 15px; margin: 15px 0;">
-                    <h4><?php echo $plan['titulo']; ?></h4>
-                    <p><?php echo $plan['descripcion']; ?></p>
+                <div style="background: linear-gradient(45deg, #a7ffeb, #80cbc4); color: #00695c; padding: 20px; border-radius: 15px; margin: 15px 0; box-shadow: 0 4px 15px rgba(128, 203, 196, 0.4); border: 2px solid #4db6ac;">
+                    <h4 style="font-size: 1.4rem; margin-bottom: 10px; font-weight: bold;"><?php echo $plan['titulo']; ?></h4>
+                    <p style="font-size: 1.1rem; line-height: 1.4; color: #00897b;"><?php echo $plan['descripcion']; ?></p>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 15px;">
-                        <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; text-align: center;">
-                            <strong>Level</strong><br><?php echo $plan['nivel']; ?>
+                        <div style="background: rgba(255,255,255,0.95); color: #00695c; padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <strong style="font-size: 0.9rem;">Level</strong><br><span style="font-size: 1.1rem;"><?php echo $plan['nivel']; ?></span>
                         </div>
-                        <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; text-align: center;">
-                            <strong>Duration</strong><br><?php echo $plan['duracion_semanas']; ?> weeks
+                        <div style="background: rgba(255,255,255,0.95); color: #00695c; padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <strong style="font-size: 0.9rem;">Duration</strong><br><span style="font-size: 1.1rem;"><?php echo $plan['duracion_semanas']; ?> weeks</span>
                         </div>
-                        <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; text-align: center;">
-                            <strong>Started</strong><br><?php echo $plan['fecha_inicio']; ?>
+                        <div style="background: rgba(255,255,255,0.95); color: #00695c; padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <strong style="font-size: 0.9rem;">Started</strong><br><span style="font-size: 1.1rem;"><?php echo $plan['fecha_inicio']; ?></span>
                         </div>
-                        <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; text-align: center;">
-                            <strong>Ends</strong><br><?php echo $plan['fecha_fin_estimada']; ?>
+                        <div style="background: rgba(255,255,255,0.95); color: #00695c; padding: 12px; border-radius: 10px; text-align: center; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <strong style="font-size: 0.9rem;">Ends</strong><br><span style="font-size: 1.1rem;"><?php echo $plan['fecha_fin_estimada']; ?></span>
                         </div>
                     </div>
                 </div>
@@ -116,7 +116,7 @@
                                 <h4><?php echo $tema['nombre']; ?></h4>
                                 <p><?php echo $tema['descripcion']; ?></p>
                                 
-                                <div style="background: #FFE066; padding: 8px; border-radius: 10px; margin: 10px 0; font-size: 14px;">
+                                <div style="background: #b2dfdb; color: #00695c; padding: 10px; border-radius: 10px; margin: 10px 0; font-size: 14px; font-weight: bold;">
                                     <strong>Level:</strong> <?php echo $tema['nivel_requerido']; ?><br>
                                     <strong>Duration:</strong> <?php echo $tema['duracion_estimada']; ?> min<br>
                                     <strong>Exercises:</strong> <?php echo $tema['total_ejercicios'] ?? 0; ?>
@@ -126,57 +126,28 @@
                                     <strong>Content:</strong> <?php echo substr($tema['contenidos'], 0, 100); ?>...
                                 </div>
                                 
-                                <a href="ejercicios_interactivos.php?tema_id=<?php echo $tema['id']; ?>&nivel=<?php echo $tema['nivel_requerido']; ?>" 
-                                   class="big-btn start" style="margin-top: 15px; font-size: 14px;">
-                                    Start Topic
-                                </a>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-
-            <!-- Ejercicios Disponibles -->
-            <div class="card">
-                <span class="card-icon">🎯</span>
-                <h3>Available Exercises / Ejercicios Disponibles (<?php echo count($ejercicios); ?>)</h3>
-                
-                <?php if (empty($ejercicios)): ?>
-                    <p>No exercises available for your assigned topics.</p>
-                <?php else: ?>
-                    <div style="max-height: 400px; overflow-y: auto;">
-                        <?php 
-                        $current_tema = '';
-                        foreach($ejercicios as $ejercicio): 
-                            if ($current_tema != $ejercicio['tema_nombre']) {
-                                $current_tema = $ejercicio['tema_nombre'];
-                                echo "<div style='background: linear-gradient(45deg, #4ECDC4, #45B7D1); color: white; padding: 10px; margin: 15px 0 5px 0; border-radius: 10px; font-weight: bold;'>{$current_tema}</div>";
-                            }
-                        ?>
-                            <div style="background: rgba(255, 255, 255, 0.9); margin: 5px 0; padding: 15px; border-radius: 10px; border-left: 4px solid #FFE066;">
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div>
-                                        <strong><?php echo $ejercicio['titulo']; ?></strong>
-                                        <span style="background: #4ECDC4; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-left: 10px;">
-                                            <?php echo ucfirst($ejercicio['tipo']); ?>
-                                        </span>
-                                    </div>
-                                    <div style="background: #FFE066; padding: 5px 10px; border-radius: 10px; font-weight: bold; font-size: 12px;">
-                                        🏆 <?php echo $ejercicio['puntos']; ?> pts
-                                    </div>
-                                </div>
-                                <p style="margin: 8px 0; color: #666; font-size: 14px;"><?php echo substr($ejercicio['contenido'], 0, 100); ?>...</p>
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                                    <small style="color: #999;">Level: <?php echo $ejercicio['nivel']; ?></small>
-                                    <a href="ejercicios_interactivos.php?tema_id=<?php echo $ejercicio['tema_nombre']; ?>&nivel=<?php echo $ejercicio['nivel']; ?>" 
-                                       class="big-btn practice" style="font-size: 12px; padding: 8px 15px;">
-                                        Practice
+                                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                    <a href="?controller=student&action=viewContent&tema_id=<?php echo $tema['id']; ?>" 
+                                       class="big-btn review" style="font-size: 12px; padding: 8px 16px; flex: 1;">
+                                        📖 Read Content
+                                    </a>
+                                    <a href="?controller=student&action=startTopic&tema_id=<?php echo $tema['id']; ?>&nivel=<?php echo $tema['nivel_requerido']; ?>" 
+                                       class="big-btn start" style="font-size: 12px; padding: 8px 16px; flex: 1;">
+                                        🎯 Practice
                                     </a>
                                 </div>
                             </div>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
+            </div>
+
+            <!-- Botón de Acción Principal -->
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="?controller=student&action=interactiveExercises" 
+                   class="big-btn start" style="font-size: 1.2rem; padding: 20px 40px;">
+                    🚀 Start Practice Exercises
+                </a>
             </div>
         <?php endif; ?>
     </div>

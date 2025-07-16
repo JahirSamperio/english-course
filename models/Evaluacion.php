@@ -13,19 +13,26 @@ class Evaluacion {
         return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     }
     
-    public function getRecent($limit = 10) {
+    public function getRecent($page = 1, $limit = 5) {
+        $offset = ($page - 1) * $limit;
         $stmt = $this->db->prepare("
             SELECT ev.*, u.nombre as estudiante_nombre 
             FROM Evaluacion ev 
             JOIN Estudiante e ON ev.estudiante_id = e.id 
             JOIN Usuario u ON e.usuario_id = u.id 
-            ORDER BY ev.fecha DESC LIMIT $limit
+            ORDER BY ev.fecha DESC LIMIT $limit OFFSET $offset
         ");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    public function getByParentId($padre_id) {
+    public function getCount() {
+        $stmt = $this->db->query("SELECT COUNT(*) as total FROM Evaluacion");
+        return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    }
+    
+    public function getByParentId($padre_id, $page = 1, $limit = 5) {
+        $offset = ($page - 1) * $limit;
         $stmt = $this->db->prepare("
             SELECT ev.*, u.nombre as estudiante_nombre 
             FROM Evaluacion ev 
@@ -33,10 +40,22 @@ class Evaluacion {
             JOIN Usuario u ON e.usuario_id = u.id
             JOIN Hijo h ON e.id = h.estudiante_id 
             WHERE h.padre_id = ? 
-            ORDER BY ev.fecha DESC LIMIT 5
+            ORDER BY ev.fecha DESC LIMIT $limit OFFSET $offset
         ");
         $stmt->execute([$padre_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getCountByParent($padre_id) {
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*) as total 
+            FROM Evaluacion ev 
+            JOIN Estudiante e ON ev.estudiante_id = e.id 
+            JOIN Hijo h ON e.id = h.estudiante_id 
+            WHERE h.padre_id = ?
+        ");
+        $stmt->execute([$padre_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     }
     
     public function create($data) {

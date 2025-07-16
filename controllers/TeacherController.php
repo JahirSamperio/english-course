@@ -27,15 +27,19 @@ class TeacherController {
     }
     
     public function dashboard() {
-        $estudiantes = $this->estudianteModel->getAll();
+        $page = $_GET['page'] ?? 1;
+        $limit = 5;
+        $estudiantes = $this->estudianteModel->getAll($page, $limit);
         $total_evaluaciones = $this->evaluacionModel->getAll();
-        $total_ejercicios = $this->ejercicioModel->getAll();
+        $total_ejercicios = $this->ejercicioModel->getAllSimple();
         
         $data = [
-            'total_estudiantes' => count($estudiantes),
+            'total_estudiantes' => $this->estudianteModel->getCount(),
             'total_evaluaciones' => $total_evaluaciones,
             'total_ejercicios' => count($total_ejercicios),
             'estudiantes' => $estudiantes,
+            'current_page' => $page,
+            'total_pages' => ceil($this->estudianteModel->getCount() / $limit),
             'page_title' => 'Teacher Dashboard'
         ];
         
@@ -67,26 +71,36 @@ class TeacherController {
     }
     
     public function panel() {
+        $page = $_GET['page'] ?? 1;
+        $limit = 5;
         $data = [
-            'planes' => $this->planModel->getAll(),
-            'estudiantes' => $this->estudianteModel->getAll(),
-            'temas' => $this->temaModel->getAll(),
-            'asignaciones' => $this->asignacionModel->getAll(),
+            'planes' => $this->planModel->getAllSimple(),
+            'estudiantes' => $this->estudianteModel->getAllSimple(),
+            'temas' => $this->temaModel->getAllSimple(),
+            'asignaciones' => $this->asignacionModel->getAll($page, $limit),
+            'current_page' => $page,
+            'total_pages' => ceil($this->asignacionModel->getCount() / $limit),
             'page_title' => 'Panel del Profesor'
         ];
         $this->loadView('teacher/panel_profesor', $data);
     }
     
     public function results() {
-        // Mostrar todos los resultados sin filtros
-        $estudiantes_progreso = $this->progresoModel->getAll();
-        $evaluaciones_recientes = $this->evaluacionModel->getRecent(10);
+        $page = $_GET['page'] ?? 1;
+        $page2 = $_GET['page2'] ?? 1;
+        $limit = 5;
+        $estudiantes_progreso = $this->progresoModel->getAll($page, $limit);
+        $evaluaciones_recientes = $this->evaluacionModel->getRecent($page2, $limit);
         
         $data = [
             'estudiantes_progreso' => $estudiantes_progreso,
             'evaluaciones_recientes' => $evaluaciones_recientes,
+            'current_page' => $page,
+            'total_pages' => ceil($this->progresoModel->getCount() / $limit),
+            'current_page2' => $page2,
+            'total_pages2' => ceil($this->evaluacionModel->getCount() / $limit),
             'estadisticas' => [
-                'total_estudiantes' => count($estudiantes_progreso),
+                'total_estudiantes' => $this->progresoModel->getCount(),
                 'promedio_progreso' => count($estudiantes_progreso) > 0 ? round(array_sum(array_column($estudiantes_progreso, 'porcentaje')) / count($estudiantes_progreso), 2) : 0,
                 'total_puntos' => array_sum(array_column($estudiantes_progreso, 'puntos_acumulados')),
                 'ejercicios_completados' => array_sum(array_column($estudiantes_progreso, 'ejercicios_completados'))
@@ -98,7 +112,11 @@ class TeacherController {
     
     public function createPlan() {
         if ($_POST) {
-            $this->planModel->create($_POST);
+            if ($this->planModel->create($_POST)) {
+                $_SESSION['notification'] = ['type' => 'success', 'message' => 'Plan creado exitosamente'];
+            } else {
+                $_SESSION['notification'] = ['type' => 'error', 'message' => 'Error al crear el plan'];
+            }
             header('Location: /englishdemo/?controller=teacher&action=panel');
             exit();
         }
@@ -107,7 +125,11 @@ class TeacherController {
     public function createTopic() {
         if ($_POST) {
             $_POST['contenidos'] = $_POST['descripcion'];
-            $this->temaModel->create($_POST);
+            if ($this->temaModel->create($_POST)) {
+                $_SESSION['notification'] = ['type' => 'success', 'message' => 'Tema creado exitosamente'];
+            } else {
+                $_SESSION['notification'] = ['type' => 'error', 'message' => 'Error al crear el tema'];
+            }
             header('Location: /englishdemo/?controller=teacher&action=panel');
             exit();
         }
@@ -124,6 +146,144 @@ class TeacherController {
             header('Location: /englishdemo/?controller=teacher&action=panel');
             exit();
         }
+    }
+    
+    public function createExercise() {
+        if ($_POST) {
+            if ($this->ejercicioModel->create($_POST)) {
+                $_SESSION['notification'] = ['type' => 'success', 'message' => 'Ejercicio creado exitosamente'];
+            } else {
+                $_SESSION['notification'] = ['type' => 'error', 'message' => 'Error al crear el ejercicio'];
+            }
+            header('Location: /englishdemo/?controller=teacher&action=panel');
+            exit();
+        }
+        $data = [
+            'temas' => $this->temaModel->getAll(),
+            'page_title' => 'Crear Ejercicio'
+        ];
+        $this->loadView('teacher/crear_ejercicio', $data);
+    }
+    
+    public function managePlans() {
+        $page = $_GET['page'] ?? 1;
+        $limit = 5;
+        $data = [
+            'planes' => $this->planModel->getAll($page, $limit),
+            'total' => $this->planModel->getCount(),
+            'current_page' => $page,
+            'total_pages' => ceil($this->planModel->getCount() / $limit),
+            'page_title' => 'Gestionar Planes'
+        ];
+        $this->loadView('teacher/manage_plans', $data);
+    }
+    
+    public function manageTopics() {
+        $page = $_GET['page'] ?? 1;
+        $limit = 5;
+        $data = [
+            'temas' => $this->temaModel->getAll($page, $limit),
+            'total' => $this->temaModel->getCount(),
+            'current_page' => $page,
+            'total_pages' => ceil($this->temaModel->getCount() / $limit),
+            'page_title' => 'Gestionar Temas'
+        ];
+        $this->loadView('teacher/manage_topics', $data);
+    }
+    
+    public function manageExercises() {
+        $page = $_GET['page'] ?? 1;
+        $limit = 5;
+        $data = [
+            'ejercicios' => $this->ejercicioModel->getAll($page, $limit),
+            'total' => $this->ejercicioModel->getCount(),
+            'current_page' => $page,
+            'total_pages' => ceil($this->ejercicioModel->getCount() / $limit),
+            'page_title' => 'Gestionar Ejercicios'
+        ];
+        $this->loadView('teacher/manage_exercises', $data);
+    }
+    
+    public function editPlan($id) {
+        if ($_POST) {
+            if ($this->planModel->update($id, $_POST)) {
+                $_SESSION['notification'] = ['type' => 'success', 'message' => 'Plan actualizado exitosamente'];
+            } else {
+                $_SESSION['notification'] = ['type' => 'error', 'message' => 'Error al actualizar el plan'];
+            }
+            header('Location: /englishdemo/?controller=teacher&action=managePlans');
+            exit();
+        }
+        $data = [
+            'plan' => $this->planModel->getById($id),
+            'page_title' => 'Editar Plan'
+        ];
+        $this->loadView('teacher/edit_plan', $data);
+    }
+    
+    public function editTopic($id) {
+        if ($_POST) {
+            if ($this->temaModel->update($id, $_POST)) {
+                $_SESSION['notification'] = ['type' => 'success', 'message' => 'Tema actualizado exitosamente'];
+            } else {
+                $_SESSION['notification'] = ['type' => 'error', 'message' => 'Error al actualizar el tema'];
+            }
+            header('Location: /englishdemo/?controller=teacher&action=manageTopics');
+            exit();
+        }
+        $data = [
+            'tema' => $this->temaModel->getById($id),
+            'page_title' => 'Editar Tema'
+        ];
+        $this->loadView('teacher/edit_topic', $data);
+    }
+    
+    public function editExercise($id) {
+        if ($_POST) {
+            if ($this->ejercicioModel->update($id, $_POST)) {
+                $_SESSION['notification'] = ['type' => 'success', 'message' => 'Ejercicio actualizado exitosamente'];
+            } else {
+                $_SESSION['notification'] = ['type' => 'error', 'message' => 'Error al actualizar el ejercicio'];
+            }
+            header('Location: /englishdemo/?controller=teacher&action=manageExercises');
+            exit();
+        }
+        $data = [
+            'ejercicio' => $this->ejercicioModel->getById($id),
+            'temas' => $this->temaModel->getAll(),
+            'page_title' => 'Editar Ejercicio'
+        ];
+        $this->loadView('teacher/edit_exercise', $data);
+    }
+    
+    public function deletePlan($id) {
+        if ($this->planModel->delete($id)) {
+            $_SESSION['notification'] = ['type' => 'success', 'message' => 'Plan eliminado exitosamente'];
+        } else {
+            $_SESSION['notification'] = ['type' => 'error', 'message' => 'Error al eliminar el plan'];
+        }
+        header('Location: /englishdemo/?controller=teacher&action=managePlans');
+        exit();
+    }
+    
+    public function deleteTopic($id) {
+        if ($this->temaModel->delete($id)) {
+            $_SESSION['notification'] = ['type' => 'success', 'message' => 'Tema eliminado exitosamente'];
+        } else {
+            $_SESSION['notification'] = ['type' => 'error', 'message' => 'Error al eliminar el tema'];
+        }
+        header('Location: /englishdemo/?controller=teacher&action=manageTopics');
+        exit();
+    }
+    
+    public function deleteExercise($id) {
+        if ($this->ejercicioModel->delete($id)) {
+            $_SESSION['notification'] = ['type' => 'success', 'message' => 'Ejercicio eliminado exitosamente'];
+        } else {
+            $_SESSION['notification'] = ['type' => 'error', 'message' => 'Error al eliminar el ejercicio'];
+        }
+        header('Location: /englishdemo/?controller=teacher&action=manageExercises');
+        exit();
     }
     
     private function loadView($view, $data = []) {
