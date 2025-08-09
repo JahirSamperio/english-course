@@ -60,16 +60,18 @@ class Evaluacion {
     
     public function create($data) {
         $stmt = $this->db->prepare("
-            INSERT INTO Evaluacion (titulo, descripcion, fecha, tiempo_limite, puntos_total, estudiante_id, profesor_id) 
-            VALUES (?, ?, CURDATE(), ?, ?, ?, ?)
+            INSERT INTO Evaluacion (titulo, descripcion, fecha, tiempo_limite, puntos_total, estudiante_id, profesor_id, archivo_pdf) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ");
         return $stmt->execute([
             $data['titulo'],
             $data['descripcion'],
-            $data['duracion'],
-            $data['puntos_total'],
+            $data['fecha'] ?? date('Y-m-d'),
+            $data['tiempo_limite'] ?? 60,
+            $data['puntos_total'] ?? 100,
             $data['estudiante_id'] ?? null,
-            $data['profesor_id'] ?? null
+            $data['profesor_id'] ?? null,
+            $data['archivo_pdf'] ?? null
         ]);
     }
 }

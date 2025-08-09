@@ -18,8 +18,25 @@
             animation: none !important;
         }
     </style>
+    <style>
+        .logo-corner {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(45deg, #4ECDC4, #45B7D1);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+    </style>
 </head>
 <body>
+    <div class="logo-corner">📚 Learning English</div>
     <div class="container">
         <div class="header bounce">
             <h1>🎓 Welcome! / ¡Bienvenido!</h1>
@@ -34,7 +51,9 @@
         
         <div class="cards-grid" style="max-width: 500px; margin: 0 auto;">
             <div class="card sparkle">
-                <span class="card-icon">🎆</span>
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <img src="/englishdemo/assets/img/logo-english.jpg" alt="Login" style="width: 120px; height: 120px; border-radius: 15px; object-fit: cover;">
+                </div>
                 <h3>Login / Iniciar Sesión</h3>
                 
                 <form method="POST" action="?controller=auth&action=login" style="text-align: left;">

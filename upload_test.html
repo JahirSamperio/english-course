@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Upload</title>
+</head>
+<body>
+    <h1>Test Cloudinary Upload</h1>
+    
+    <form id="audioForm">
+        <h3>Subir Audio</h3>
+        <input type="file" id="audioFile" accept="audio/*">
+        <button type="button" onclick="uploadAudio()">Subir Audio</button>
+    </form>
+    
+    <form id="imageForm">
+        <h3>Subir Imagen</h3>
+        <input type="file" id="imageFile" accept="image/*">
+        <button type="button" onclick="uploadImage()">Subir Imagen</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <script>
+    async function uploadAudio() {
+        const fileInput = document.getElementById('audioFile');
+        const file = fileInput.files[0];
+        
+        if (!file) {
+            alert('Selecciona un archivo');
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('audio', file);
+        
+        try {
+            const response = await fetch('/englishdemo/?controller=file&action=uploadAudio', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            document.getElementById('result').innerHTML = 
+                '<h3>Resultado Audio:</h3><pre>' + JSON.stringify(result, null, 2) + '</pre>';
+                
+            if (result.success) {
+                alert('¡Audio subido! URL: ' + result.url);
+            } else {
+                alert('Error: ' + result.error);
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+            console.error(error);
+        }
+    }
+    
+    async function uploadImage() {
+        const fileInput = document.getElementById('imageFile');
+        const file = fileInput.files[0];
+        
+        if (!file) {
+            alert('Selecciona una imagen');
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        try {
+            const response = await fetch('/englishdemo/?controller=file&action=uploadImage', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            document.getElementById('result').innerHTML = 
+                '<h3>Resultado Imagen:</h3><pre>' + JSON.stringify(result, null, 2) + '</pre>';
+                
+            if (result.success) {
+                alert('¡Imagen subida! URL: ' + result.url);
+                // Mostrar imagen
+                document.getElementById('result').innerHTML += 
+                    '<br><img src="' + result.url + '" style="max-width:300px;">';
+            } else {
+                alert('Error: ' + result.error);
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+            console.error(error);
+        }
+    }
+    </script>
+</body>
+</html>

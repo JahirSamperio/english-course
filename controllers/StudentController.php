@@ -179,6 +179,30 @@ class StudentController {
         $this->loadView('student/view_content', $data);
     }
     
+    public function verEvaluaciones($estudiante_id) {
+        require_once 'config/Database.php';
+        $db = Database::getInstance()->getConnection();
+        
+        // Obtener evaluaciones disponibles para el estudiante
+        $stmt = $db->prepare("
+            SELECT * FROM Evaluacion 
+            WHERE archivo_pdf IS NOT NULL 
+            ORDER BY fecha DESC
+        ");
+        $stmt->execute();
+        $evaluaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        $estudiante = $this->estudianteModel->getWithProgress($estudiante_id);
+        
+        $data = [
+            'evaluaciones' => $evaluaciones,
+            'estudiante' => $estudiante,
+            'page_title' => 'Mis Evaluaciones'
+        ];
+        
+        $this->loadView('student/evaluaciones_pdf', $data);
+    }
+    
     private function loadView($view, $data = []) {
         extract($data);
         require_once "views/$view.php";

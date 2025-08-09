@@ -1,4 +1,7 @@
 <?php
+// Incluir autoload de Composer
+require_once 'vendor/autoload.php';
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
@@ -52,6 +55,9 @@ switch ($controller) {
                 break;
             case 'viewContent':
                 $ctrl->viewContent($_SESSION['estudiante_id']);
+                break;
+            case 'verEvaluaciones':
+                $ctrl->verEvaluaciones($_SESSION['estudiante_id']);
                 break;
             default:
                 $ctrl->dashboard($_SESSION['estudiante_id']);
@@ -119,6 +125,18 @@ switch ($controller) {
             case 'deleteExercise':
                 $ctrl->deleteExercise($_GET['id'] ?? null);
                 break;
+            case 'crearEjerciciosMultiples':
+                $ctrl->crearEjerciciosMultiples();
+                break;
+            case 'guardarEjerciciosMultiples':
+                $ctrl->guardarEjerciciosMultiples();
+                break;
+            case 'crearEvaluacionPdf':
+                $ctrl->crearEvaluacionPdf();
+                break;
+            case 'guardarEvaluacionPdf':
+                $ctrl->guardarEvaluacionPdf();
+                break;
             default:
                 $ctrl->dashboard();
                 break;
@@ -139,6 +157,23 @@ switch ($controller) {
                 break;
             default:
                 $ctrl->dashboard($_SESSION['padre_id']);
+                break;
+        }
+        break;
+        
+    case 'file':
+        require_once 'controllers/FileController.php';
+        $ctrl = new FileController();
+        
+        switch ($action) {
+            case 'uploadAudio':
+                $ctrl->uploadAudio();
+                break;
+            case 'uploadImage':
+                $ctrl->uploadImage();
+                break;
+            case 'uploadEvaluacionPdf':
+                $ctrl->uploadEvaluacionPdf();
                 break;
         }
         break;

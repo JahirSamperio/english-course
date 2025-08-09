@@ -117,8 +117,26 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
     </style>
+    </style>
+    <style>
+        .logo-corner {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(45deg, #4ECDC4, #45B7D1);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+    </style>
 </head>
 <body class="dashboard docente-theme">
+    <div class="logo-corner">📚 Learning English</div>
     <a href="/englishdemo/?controller=auth&action=logout" class="logout-btn">🚪 Salir</a>
     
     <div class="dashboard-header">
@@ -177,6 +195,18 @@
             <h3>📊 Ver Resultados</h3>
             <p>Analizar resultados de evaluaciones</p>
             <a href="/englishdemo/?controller=teacher&action=results" class="btn">📈 Ver Resultados</a>
+        </div>
+        
+        <div class="card">
+            <h3>📝 Ejercicios Múltiples</h3>
+            <p>Crear hasta 10 ejercicios de una vez</p>
+            <a href="/englishdemo/?controller=teacher&action=crearEjerciciosMultiples" class="btn">⚡ Crear Múltiples</a>
+        </div>
+        
+        <div class="card">
+            <h3>📄 Evaluación PDF</h3>
+            <p>Crear evaluación con archivo PDF</p>
+            <a href="/englishdemo/?controller=teacher&action=crearEvaluacionPdf" class="btn">📁 Subir PDF</a>
         </div>
     </div>
     

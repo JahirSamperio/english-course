@@ -286,6 +286,85 @@ class TeacherController {
         exit();
     }
     
+    public function crearEjerciciosMultiples() {
+        $data = [
+            'temas' => $this->temaModel->getAllSimple(),
+            'page_title' => 'Crear Ejercicios Múltiples'
+        ];
+        $this->loadView('teacher/crear_ejercicios_multiples', $data);
+    }
+    
+    public function guardarEjerciciosMultiples() {
+        if ($_POST && isset($_POST['ejercicios'])) {
+            $tema_id = $_POST['tema_id'];
+            $nivel = $_POST['nivel'];
+            $ejercicios = $_POST['ejercicios'];
+            $guardados = 0;
+            
+            foreach ($ejercicios as $ejercicio) {
+                $data = [
+                    'titulo' => $ejercicio['titulo'],
+                    'contenido' => $ejercicio['contenido'],
+                    'respuesta_correcta' => $ejercicio['respuesta_correcta'],
+                    'tipo' => $ejercicio['tipo'],
+                    'nivel' => $nivel,
+                    'puntos' => $ejercicio['puntos'],
+                    'tema_id' => $tema_id
+                ];
+                
+                if ($this->ejercicioModel->create($data)) {
+                    $guardados++;
+                }
+            }
+            
+            $_SESSION['notification'] = [
+                'type' => 'success', 
+                'message' => "$guardados ejercicios creados exitosamente"
+            ];
+        } else {
+            $_SESSION['notification'] = [
+                'type' => 'error', 
+                'message' => 'Error: No se recibieron ejercicios'
+            ];
+        }
+        
+        header('Location: /englishdemo/?controller=teacher&action=dashboard');
+        exit();
+    }
+    
+    public function crearEvaluacionPdf() {
+        $this->loadView('teacher/crear_evaluacion_pdf');
+    }
+    
+    public function guardarEvaluacionPdf() {
+        if ($_POST) {
+            $data = [
+                'titulo' => $_POST['titulo'],
+                'descripcion' => $_POST['descripcion'],
+                'fecha' => $_POST['fecha'],
+                'tiempo_limite' => $_POST['tiempo_limite'],
+                'puntos_total' => $_POST['puntos_total'],
+                'archivo_pdf' => $_POST['archivo_pdf'] ?? null,
+                'profesor_id' => $_SESSION['profesor_id'] ?? 1
+            ];
+            
+            if ($this->evaluacionModel->create($data)) {
+                $_SESSION['notification'] = [
+                    'type' => 'success',
+                    'message' => 'Evaluación con PDF creada exitosamente'
+                ];
+            } else {
+                $_SESSION['notification'] = [
+                    'type' => 'error',
+                    'message' => 'Error al crear la evaluación'
+                ];
+            }
+        }
+        
+        header('Location: /englishdemo/?controller=teacher&action=dashboard');
+        exit();
+    }
+    
     private function loadView($view, $data = []) {
         extract($data);
         require_once "views/$view.php";

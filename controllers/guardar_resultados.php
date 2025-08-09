@@ -1,11 +1,21 @@
 <?php
+error_reporting(0);
+ini_set('display_errors', 0);
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
-require_once __DIR__ . '/../config/Database.php';
-require_once __DIR__ . '/../models/Progreso.php';
 
 header('Content-Type: application/json');
+header('Cache-Control: no-cache, must-revalidate');
+
+try {
+    require_once __DIR__ . '/../config/Database.php';
+    require_once __DIR__ . '/../models/Progreso.php';
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'error' => 'Include error']);
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'error' => 'Invalid method']);
@@ -13,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 if (!isset($_SESSION['estudiante_id'])) {
-    echo json_encode(['success' => false, 'error' => 'No student session']);
+    echo json_encode(['success' => false, 'error' => 'No student session', 'session' => $_SESSION]);
     exit;
 }
 

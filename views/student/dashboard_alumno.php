@@ -10,8 +10,26 @@
     <title>🌟 English Learning Fun!</title>
     <link rel="stylesheet" href="/englishdemo/assets/css/styles_kids.css">
     <link rel="stylesheet" href="/englishdemo/assets/css/styles_enhanced.css">
+    </style>
+    <style>
+        .logo-corner {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(45deg, #4ECDC4, #45B7D1);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+    </style>
 </head>
 <body>
+    <div class="logo-corner">📚 Learning English</div>
     <div class="container">
         <!-- Mascota educativa -->
         <div class="mascot-container">
@@ -102,6 +120,17 @@
                 <div style="margin-top: 15px;">
                     <p><strong>Accuracy / Precisión:</strong> <?php echo $estudiante['ejercicios_completados'] > 0 ? round(($estudiante['ejercicios_correctos'] / $estudiante['ejercicios_completados']) * 100, 1) : 0; ?>%</p>
                     <p><strong>Level / Nivel:</strong> <?php echo $estudiante['nivel_actual'] ?? 'Beginner'; ?></p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <span class="card-icon">📄</span>
+                <h3>My Evaluations / Mis Evaluaciones</h3>
+                <p>View and download PDFs / Ver y descargar PDFs</p>
+                <div style="margin-top: 15px;">
+                    <a href="/englishdemo/?controller=student&action=verEvaluaciones" class="big-btn start">
+                        👁️ Ver PDFs
+                    </a>
                 </div>
             </div>
             

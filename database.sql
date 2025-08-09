@@ -91,7 +91,9 @@ CREATE TABLE Plan_de_estudios (
     nivel ENUM('Beginner', 'Elementary', 'Intermediate', 'Upper-Intermediate', 'Advanced'),
     duracion_semanas INT DEFAULT 12,
     unidades TEXT,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    grupo_id INT,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (grupo_id) REFERENCES Grupo(id) ON DELETE SET NULL
 );
 
 -- Tabla Estudiantes_asignados (intermedia)
@@ -116,6 +118,7 @@ CREATE TABLE Ejercicio (
     nivel ENUM('Beginner', 'Elementary', 'Intermediate', 'Upper-Intermediate', 'Advanced'),
     puntos INT DEFAULT 10,
     tema_id INT,
+    imagen VARCHAR(500) NULL COMMENT 'URL de imagen para el ejercicio',
     FOREIGN KEY (tema_id) REFERENCES Tema(id) ON DELETE CASCADE
 );
 
@@ -130,8 +133,11 @@ CREATE TABLE Evaluacion (
     resultado DECIMAL(5,2),
     estudiante_id INT,
     profesor_id INT,
+    grupo_id INT,
+    archivo_pdf VARCHAR(500) NULL COMMENT 'URL del archivo PDF de la evaluación',
     FOREIGN KEY (estudiante_id) REFERENCES Estudiante(id) ON DELETE CASCADE,
-    FOREIGN KEY (profesor_id) REFERENCES Profesor(id) ON DELETE SET NULL
+    FOREIGN KEY (profesor_id) REFERENCES Profesor(id) ON DELETE SET NULL,
+    FOREIGN KEY (grupo_id) REFERENCES Grupo(id) ON DELETE SET NULL
 );
 
 -- Tabla Resultado_de_evaluacion
@@ -161,6 +167,29 @@ CREATE TABLE Progreso (
     ultima_actividad TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     estudiante_id INT,
     FOREIGN KEY (estudiante_id) REFERENCES Estudiante(id) ON DELETE CASCADE
+);
+
+-- Tabla Grupo
+CREATE TABLE Grupo (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion TEXT,
+    nivel ENUM('Beginner', 'Elementary', 'Intermediate', 'Upper-Intermediate', 'Advanced'),
+    profesor_id INT,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    activo BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (profesor_id) REFERENCES Profesor(id) ON DELETE SET NULL
+);
+
+-- Tabla intermedia Grupo_Estudiantes
+CREATE TABLE Grupo_Estudiantes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    grupo_id INT,
+    estudiante_id INT,
+    fecha_ingreso TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (grupo_id) REFERENCES Grupo(id) ON DELETE CASCADE,
+    FOREIGN KEY (estudiante_id) REFERENCES Estudiante(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_grupo_estudiante (grupo_id, estudiante_id)
 );
 
 -- Insertar datos de ejemplo para inglés
@@ -250,6 +279,17 @@ INSERT INTO Resultado_de_evaluacion (calificaciones, comentarios, fecha_de_reali
 (85.0, 'Shows improvement in complex structures. Focus on conditionals.', '2024-07-17 16:45:00', 55, 3, 5, 'were', TRUE),
 (90.0, 'Great conversation skills. Work on pronunciation of th sounds.', '2024-07-18 11:20:00', 28, 4, 4, 'Hello, how are you?', TRUE),
 (95.5, 'Outstanding listening comprehension. Ready for advanced materials.', '2024-07-19 13:10:00', 47, 5, 6, 'Dear Mr. Smith, I would like to schedule a meeting to discuss our project timeline.', TRUE);
+
+-- Insertar datos de ejemplo para Grupos
+INSERT INTO Grupo (nombre, descripcion, nivel, profesor_id) VALUES 
+('Beginners A1', 'Grupo inicial de principiantes', 'Beginner', 1),
+('Intermediate B1', 'Estudiantes nivel intermedio', 'Intermediate', 2),
+('Advanced C1', 'Grupo avanzado', 'Advanced', 2);
+
+INSERT INTO Grupo_Estudiantes (grupo_id, estudiante_id) VALUES 
+(1, 1), -- John en Beginners A1
+(2, 2), -- Emma en Intermediate B1  
+(3, 3); -- Michael en Advanced C1
 
 -- Mostrar confirmación
 SELECT 'English Learning System database created successfully!' AS Status;
