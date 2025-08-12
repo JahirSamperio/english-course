@@ -1,11 +1,22 @@
 <?php
 // Upload directo sin autenticación
+error_reporting(0);
+ini_set('display_errors', 0);
+
 require_once 'vendor/autoload.php';
 require_once 'config/CloudinaryConfig.php';
 
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Headers: Content-Type');
 
 try {
+    if (!class_exists('CloudinaryManager')) {
+        echo json_encode(['success' => false, 'error' => 'CloudinaryManager no encontrado']);
+        exit;
+    }
+    
     $cloudinary = new CloudinaryManager();
     
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -64,8 +75,19 @@ try {
                 exit;
             }
             
-            $fileName = 'evaluacion_' . time() . '_' . pathinfo($file['name'], PATHINFO_FILENAME) . '.pdf';
+            if (!file_exists($file['tmp_name'])) {
+                echo json_encode(['success' => false, 'error' => 'Archivo temporal no encontrado']);
+                exit;
+            }
+            
+            $fileName = 'evaluacion_' . time() . '_' . pathinfo($file['name'], PATHINFO_FILENAME);
             $result = $cloudinary->uploadPdf($file['tmp_name'], $fileName);
+            
+            if (!$result) {
+                echo json_encode(['success' => false, 'error' => 'Respuesta vacía de Cloudinary']);
+                exit;
+            }
+            
             echo json_encode($result);
             exit;
         }
@@ -74,6 +96,13 @@ try {
     echo json_encode(['success' => false, 'error' => 'No se recibió archivo']);
     
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'error' => 'Error: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'error' => 'Error: ' . $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+} catch (Error $e) {
+    echo json_encode(['success' => false, 'error' => 'Fatal Error: ' . $e->getMessage()]);
+}
+
+// Asegurar que siempre hay una respuesta
+if (!headers_sent()) {
+    echo json_encode(['success' => false, 'error' => 'No se procesó ningún archivo']);
 }
 ?>

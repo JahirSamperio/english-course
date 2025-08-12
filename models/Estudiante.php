@@ -43,10 +43,13 @@ class Estudiante {
     public function getAll($page = 1, $limit = 5) {
         $offset = ($page - 1) * $limit;
         $stmt = $this->db->prepare("
-            SELECT e.*, u.nombre, u.email, p.ejercicios_completados, p.porcentaje, p.nivel_actual, p.puntos_acumulados 
+            SELECT e.*, u.nombre, u.email, p.ejercicios_completados, p.porcentaje, p.nivel_actual, p.puntos_acumulados,
+                   g.nombre as grupo_nombre, g.nivel as grupo_nivel
             FROM Estudiante e 
             JOIN Usuario u ON e.usuario_id = u.id 
             LEFT JOIN Progreso p ON e.id = p.estudiante_id 
+            LEFT JOIN Grupo_Estudiantes ge ON e.id = ge.estudiante_id
+            LEFT JOIN Grupo g ON ge.grupo_id = g.id AND g.activo = 1
             ORDER BY u.nombre, e.grado
             LIMIT $limit OFFSET $offset
         ");
@@ -61,10 +64,13 @@ class Estudiante {
     
     public function getAllSimple() {
         $stmt = $this->db->query("
-            SELECT e.*, u.nombre, u.email, p.ejercicios_completados, p.porcentaje, p.nivel_actual, p.puntos_acumulados 
+            SELECT e.*, u.nombre, u.email, p.ejercicios_completados, p.porcentaje, p.nivel_actual, p.puntos_acumulados,
+                   g.nombre as grupo_nombre, g.nivel as grupo_nivel
             FROM Estudiante e 
             JOIN Usuario u ON e.usuario_id = u.id 
             LEFT JOIN Progreso p ON e.id = p.estudiante_id 
+            LEFT JOIN Grupo_Estudiantes ge ON e.id = ge.estudiante_id
+            LEFT JOIN Grupo g ON ge.grupo_id = g.id AND g.activo = 1
             ORDER BY u.nombre, e.grado
         ");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

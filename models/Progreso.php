@@ -40,7 +40,16 @@ class Progreso {
     
     public function getAll($page = 1, $limit = 5) {
         $offset = ($page - 1) * $limit;
-        $stmt = $this->db->prepare("SELECT p.*, u.nombre, e.grado FROM Progreso p JOIN Estudiante e ON p.estudiante_id = e.id JOIN Usuario u ON e.usuario_id = u.id ORDER BY u.nombre LIMIT $limit OFFSET $offset");
+        $stmt = $this->db->prepare("
+            SELECT p.*, u.nombre, e.grado, g.nombre as grupo_nombre, g.nivel as grupo_nivel
+            FROM Progreso p 
+            JOIN Estudiante e ON p.estudiante_id = e.id 
+            JOIN Usuario u ON e.usuario_id = u.id 
+            LEFT JOIN Grupo_Estudiantes ge ON e.id = ge.estudiante_id
+            LEFT JOIN Grupo g ON ge.grupo_id = g.id AND g.activo = 1
+            ORDER BY u.nombre 
+            LIMIT $limit OFFSET $offset
+        ");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -51,7 +60,15 @@ class Progreso {
     }
     
     public function getByFilters($nivel = null, $grado = null, $min_progreso = null) {
-        $sql = "SELECT p.*, u.nombre, e.grado FROM Progreso p JOIN Estudiante e ON p.estudiante_id = e.id JOIN Usuario u ON e.usuario_id = u.id WHERE 1=1";
+        $sql = "
+            SELECT p.*, u.nombre, e.grado, g.nombre as grupo_nombre, g.nivel as grupo_nivel
+            FROM Progreso p 
+            JOIN Estudiante e ON p.estudiante_id = e.id 
+            JOIN Usuario u ON e.usuario_id = u.id 
+            LEFT JOIN Grupo_Estudiantes ge ON e.id = ge.estudiante_id
+            LEFT JOIN Grupo g ON ge.grupo_id = g.id AND g.activo = 1
+            WHERE 1=1
+        ";
         $params = [];
         
         if ($nivel) {

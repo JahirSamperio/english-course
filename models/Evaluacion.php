@@ -58,10 +58,19 @@ class Evaluacion {
         return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
     }
     
+    public function getAllSimple() {
+        $stmt = $this->db->query("
+            SELECT id, titulo, fecha, puntos_total, tiempo_limite
+            FROM Evaluacion 
+            ORDER BY fecha DESC
+        ");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
     public function create($data) {
         $stmt = $this->db->prepare("
-            INSERT INTO Evaluacion (titulo, descripcion, fecha, tiempo_limite, puntos_total, estudiante_id, profesor_id, archivo_pdf) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO Evaluacion (titulo, descripcion, fecha, tiempo_limite, puntos_total, estudiante_id, profesor_id, archivo_pdf, grupo_id) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         return $stmt->execute([
             $data['titulo'],
@@ -71,7 +80,8 @@ class Evaluacion {
             $data['puntos_total'] ?? 100,
             $data['estudiante_id'] ?? null,
             $data['profesor_id'] ?? null,
-            $data['archivo_pdf'] ?? null
+            $data['archivo_pdf'] ?? null,
+            empty($data['grupo_id']) ? null : $data['grupo_id']
         ]);
     }
 }

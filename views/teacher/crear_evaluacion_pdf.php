@@ -83,6 +83,18 @@
                 <label>Puntos totales:</label>
                 <input type="number" name="puntos_total" value="100" min="1">
             </div>
+            
+            <div class="form-group">
+                <label>Asignar a Grupo (opcional):</label>
+                <select name="grupo_id">
+                    <option value="">Seleccionar grupo...</option>
+                    <?php if(isset($grupos)): foreach($grupos as $grupo): ?>
+                        <option value="<?php echo $grupo['id']; ?>">
+                            <?php echo $grupo['nombre']; ?> (<?php echo $grupo['nivel']; ?>)
+                        </option>
+                    <?php endforeach; endif; ?>
+                </select>
+            </div>
 
             <div class="upload-area" id="uploadArea">
                 <h3>📎 Subir PDF de la Evaluación</h3>
@@ -107,11 +119,7 @@
                 <p><small>El PDF se guardará en la base de datos con la evaluación</small></p>
             </div>
             
-            <!-- Debug info -->
-            <div id="debugInfo" style="background: #f0f0f0; padding: 10px; margin: 10px 0; display: none;">
-                <h4>Debug Info:</h4>
-                <p>PDF URL: <span id="debugUrl"></span></p>
-            </div>
+
         </form>
     </div>
 
@@ -162,7 +170,22 @@
             method: 'POST',
             body: formData
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(text => {
+            let result;
+            try {
+                result = JSON.parse(text);
+            } catch (e) {
+                console.error('Response text:', text);
+                throw new Error('Invalid JSON response: ' + text.substring(0, 100));
+            }
+            return result;
+        })
         .then(result => {
             if (result.success) {
                 // Mostrar preview
@@ -172,9 +195,7 @@
                 pdfPreview.style.display = 'block';
                 submitBtn.disabled = false;
                 
-                // Debug
-                document.getElementById('debugUrl').textContent = result.url;
-                document.getElementById('debugInfo').style.display = 'block';
+
                 
                 // Restaurar upload area
                 uploadArea.innerHTML = `

@@ -17,9 +17,14 @@
         }
         .panel-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 25px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
             margin: 20px 0;
+        }
+        @media (max-width: 1024px) {
+            .panel-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
         @media (max-width: 768px) {
             .panel-grid {
@@ -132,6 +137,34 @@
         </nav>
 
         <div class="panel-grid">
+            <!-- Crear Grupo -->
+            <div class="panel-card">
+                <h3>👥 Crear Grupo</h3>
+                <form method="POST" action="/englishdemo/?controller=teacher&action=createGroup">
+                    <div class="form-group">
+                        <label>Nombre del Grupo:</label>
+                        <input type="text" name="nombre" required placeholder="Ej: Beginners A1">
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción:</label>
+                        <textarea name="descripcion" placeholder="Describe el grupo"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Nivel:</label>
+                        <select name="nivel" required>
+                            <option value="Beginner">Beginner</option>
+                            <option value="Elementary">Elementary</option>
+                            <option value="Intermediate">Intermediate
+                            <option value="Advanced">Advanced</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-submit">✅ Crear Grupo</button>
+                </form>
+                <a href="/englishdemo/?controller=teacher&action=manageGroups" class="btn-submit" style="display: block; text-decoration: none; margin-top: 10px; background: linear-gradient(45deg, #FF6B6B, #FD79A8);">
+                    📋 Gestionar Grupos
+                </a>
+            </div>
+
             <!-- Crear Plan de Estudios -->
             <div class="panel-card">
                 <h3>📚 Crear Plan de Estudios</h3>
@@ -189,6 +222,17 @@
                         <label>Duración Estimada (min):</label>
                         <input type="number" name="duracion_estimada" min="5" max="180" value="30">
                     </div>
+                    <div class="form-group">
+                        <label>Plan de Estudios (opcional):</label>
+                        <select name="plan_id">
+                            <option value="">Sin plan asignado</option>
+                            <?php if(isset($planes)): foreach($planes as $plan): ?>
+                                <option value="<?php echo $plan['id']; ?>">
+                                    <?php echo $plan['titulo']; ?> (<?php echo $plan['nivel']; ?>)
+                                </option>
+                            <?php endforeach; endif; ?>
+                        </select>
+                    </div>
                     <button type="submit" class="btn-submit">✅ Crear Tema</button>
                 </form>
                 <a href="/englishdemo/?controller=teacher&action=manageTopics" class="btn-submit" style="display: block; text-decoration: none; margin-top: 10px; background: linear-gradient(45deg, #FF6B6B, #FD79A8);">
@@ -208,16 +252,16 @@
                 </a>
             </div>
 
-            <!-- Asignar Plan a Estudiantes -->
+            <!-- Asignar Estudiantes a Grupo -->
             <div class="panel-card">
-                <h3>👥 Asignar Plan a Estudiantes</h3>
-                <form method="POST" action="/englishdemo/?controller=teacher&action=assignPlan">
+                <h3>👥 Asignar Estudiantes a Grupo</h3>
+                <form method="POST" action="/englishdemo/?controller=teacher&action=assignToGroup">
                     <div class="form-group">
-                        <label>Seleccionar Plan:</label>
-                        <select name="plan_id" required>
-                            <?php if(isset($planes)): foreach($planes as $plan): ?>
-                                <option value="<?php echo $plan['id']; ?>">
-                                    <?php echo $plan['titulo']; ?> (<?php echo $plan['nivel']; ?>)
+                        <label>Seleccionar Grupo:</label>
+                        <select name="grupo_id" required>
+                            <?php if(isset($grupos)): foreach($grupos as $grupo): ?>
+                                <option value="<?php echo $grupo['id']; ?>">
+                                    <?php echo $grupo['nombre']; ?> (<?php echo $grupo['nivel']; ?>)
                                 </option>
                             <?php endforeach; endif; ?>
                         </select>
@@ -228,12 +272,95 @@
                             <?php if(isset($estudiantes)): foreach($estudiantes as $estudiante): ?>
                                 <div class="student-item">
                                     <input type="checkbox" name="estudiantes[]" value="<?php echo $estudiante['id']; ?>">
-                                    <span><strong><?php echo $estudiante['nombre'] ?? 'Sin nombre'; ?></strong> - Grado: <?php echo $estudiante['grado']; ?> - Nivel: <?php echo $estudiante['nivel_actual'] ?? 'Beginner'; ?></span>
+                                    <span>
+                                        <strong><?php echo $estudiante['nombre'] ?? 'Sin nombre'; ?></strong> - 
+                                        Grado: <?php echo $estudiante['grado']; ?> - 
+                                        Nivel: <?php echo $estudiante['nivel_actual'] ?? 'Beginner'; ?>
+                                        <?php if (!empty($estudiante['grupo_nombre'])): ?>
+                                            - <span style="color: #4ECDC4; font-weight: bold;">Grupo: <?php echo $estudiante['grupo_nombre']; ?></span>
+                                        <?php else: ?>
+                                            - <span style="color: #FFA726;">Sin grupo</span>
+                                        <?php endif; ?>
+                                    </span>
                                 </div>
                             <?php endforeach; endif; ?>
                         </div>
                     </div>
-                    <button type="submit" class="btn-submit">📋 Asignar Plan</button>
+                    <button type="submit" class="btn-submit">👥 Asignar a Grupo</button>
+                </form>
+            </div>
+
+            <!-- Crear Estudiante -->
+            <div class="panel-card">
+                <h3>👤 Crear Estudiante</h3>
+                <form method="POST" action="/englishdemo/?controller=teacher&action=createStudent">
+                    <div class="form-group">
+                        <label>Nombre:</label>
+                        <input type="text" name="nombre" required placeholder="Ej: Ana García">
+                    </div>
+                    <div class="form-group">
+                        <label>Email:</label>
+                        <input type="email" name="email" required placeholder="ana@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña:</label>
+                        <input type="password" name="password" required placeholder="Mínimo 6 caracteres">
+                    </div>
+                    <div class="form-group">
+                        <label>Grado:</label>
+                        <select name="grado" required>
+                            <option value="Beginner">Beginner</option>
+                            <option value="Elementary">Elementary</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="Advanced">Advanced</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Edad:</label>
+                        <input type="number" name="edad" min="5" max="100" placeholder="15">
+                    </div>
+                    <div class="form-group">
+                        <label>Asignar a Grupo (opcional):</label>
+                        <select name="grupo_id">
+                            <option value="">Sin grupo</option>
+                            <?php if(isset($grupos)): foreach($grupos as $grupo): ?>
+                                <option value="<?php echo $grupo['id']; ?>">
+                                    <?php echo $grupo['nombre']; ?> (<?php echo $grupo['nivel']; ?>)
+                                </option>
+                            <?php endforeach; endif; ?>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-submit">👤 Crear Estudiante</button>
+                </form>
+            </div>
+
+            <!-- Asignar Evaluación a Grupo -->
+            <div class="panel-card">
+                <h3>📝 Asignar Evaluación a Grupo</h3>
+                <form method="POST" action="/englishdemo/?controller=teacher&action=assignEvaluationToGroup">
+                    <div class="form-group">
+                        <label>Seleccionar Evaluación:</label>
+                        <select name="evaluacion_id" required>
+                            <option value="">Seleccionar evaluación...</option>
+                            <?php if(isset($evaluaciones)): foreach($evaluaciones as $eval): ?>
+                                <option value="<?php echo $eval['id']; ?>">
+                                    <?php echo $eval['titulo']; ?> - <?php echo $eval['fecha']; ?> (<?php echo $eval['puntos_total']; ?>pts)
+                                </option>
+                            <?php endforeach; endif; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Grupo:</label>
+                        <select name="grupo_id" required>
+                            <option value="">Seleccionar grupo...</option>
+                            <?php if(isset($grupos)): foreach($grupos as $grupo): ?>
+                                <option value="<?php echo $grupo['id']; ?>">
+                                    <?php echo $grupo['nombre']; ?> (<?php echo $grupo['nivel']; ?>)
+                                </option>
+                            <?php endforeach; endif; ?>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-submit">📝 Asignar Evaluación</button>
                 </form>
             </div>
         </div>

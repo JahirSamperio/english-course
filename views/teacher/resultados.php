@@ -135,6 +135,7 @@
                     <tr style="background: linear-gradient(45deg, #4ECDC4, #45B7D1); color: white;">
                         <th style="padding: 12px; text-align: left;">Estudiante</th>
                         <th style="padding: 12px; text-align: left;">Grado</th>
+                        <th style="padding: 12px; text-align: left;">Grupo</th>
                         <th style="padding: 12px; text-align: left;">Nivel</th>
                         <th style="padding: 12px; text-align: left;">Progreso</th>
                         <th style="padding: 12px; text-align: left;">Ejercicios</th>
@@ -150,6 +151,15 @@
                             </td>
                             <td style="padding: 12px; border-bottom: 1px solid #ddd;">
                                 <?php echo $estudiante['grado'] ?? 'N/A'; ?>°
+                            </td>
+                            <td style="padding: 12px; border-bottom: 1px solid #ddd;">
+                                <?php if (!empty($estudiante['grupo_nombre'])): ?>
+                                    <span style="background: #4ECDC4; color: white; padding: 4px 8px; border-radius: 10px; font-size: 12px;">
+                                        <?php echo $estudiante['grupo_nombre']; ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span style="color: #999; font-style: italic;">Sin grupo</span>
+                                <?php endif; ?>
                             </td>
                             <td style="padding: 12px; border-bottom: 1px solid #ddd;">
                                 <span class="level-badge level-<?php echo strtolower($estudiante['nivel_actual'] ?? 'beginner'); ?>">
@@ -175,7 +185,7 @@
                         </tr>
                     <?php endforeach; else: ?>
                         <tr>
-                            <td colspan="7" style="padding: 20px; text-align: center; color: #666;">
+                            <td colspan="8" style="padding: 20px; text-align: center; color: #666;">
                                 No hay datos de progreso disponibles
                             </td>
                         </tr>

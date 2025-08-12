@@ -1,17 +1,31 @@
 <?php
 use Cloudinary\Configuration\Configuration;
 use Cloudinary\Api\Upload\UploadApi;
+use Cloudinary\Utils;
 
 class CloudinaryManager {
     
     public function __construct() {
         Configuration::instance([
             'cloud' => [
-                'cloud_name' => 'dszrfmjri', // Tu cloud name
+                'cloud_name' => 'dszrfmjri',
                 'api_key' => '281486293299224',
                 'api_secret' => 'LpZXYn-GkbidycEx3MPZCuMo4Rk'
+            ],
+            'url' => [
+                'secure' => true
             ]
         ]);
+        
+        // Deshabilitar verificación SSL para desarrollo local
+        if ($_SERVER['HTTP_HOST'] === 'localhost' || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false) {
+            $context = stream_context_create([
+                'http' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false
+                ]
+            ]);
+        }
     }
     
     public function uploadAudio($filePath, $fileName = null) {
@@ -62,33 +76,50 @@ class CloudinaryManager {
     
     public function uploadPdf($filePath, $fileName = null) {
         try {
+            // Configurar cURL para desarrollo local
+            $curlOptions = [];
+            if ($_SERVER['HTTP_HOST'] === 'localhost' || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false) {
+                $curlOptions = [
+                    CURLOPT_SSL_VERIFYPEER => false,
+                    CURLOPT_SSL_VERIFYHOST => false,
+                    CURLOPT_TIMEOUT => 60
+                ];
+            }
+            
             $uploadApi = new UploadApi();
-            $result = $uploadApi->upload($filePath, [
+            
+            $options = [
                 'resource_type' => 'raw',
                 'folder' => 'english-learning/pdfs',
                 'public_id' => $fileName,
-                'format' => 'pdf',
-                'type' => 'upload',
-                'access_mode' => 'public',
                 'overwrite' => true
-            ]);
+            ];
+            
+            if (!empty($curlOptions)) {
+                $options['curl'] = $curlOptions;
+            }
+            
+            $result = $uploadApi->upload($filePath, $options);
+            
+            if (!$result || !isset($result['secure_url'])) {
+                throw new Exception('Respuesta inválida de Cloudinary');
+            }
             
             return [
                 'success' => true,
                 'url' => $result['secure_url'],
-                'public_id' => $result['public_id']
+                'public_id' => $result['public_id'] ?? ''
             ];
         } catch (Exception $e) {
             return [
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => 'Upload failed: ' . $e->getMessage()
             ];
         }
     }
     
     public function getSignedPdfUrl($publicId) {
         try {
-            use Cloudinary\Utils;
             $url = Utils::cloudinaryUrl($publicId, [
                 'resource_type' => 'raw',
                 'type' => 'upload',

@@ -104,6 +104,15 @@
                         <span>Progreso: <?php echo $hijo['porcentaje'] ?? 0; ?>%</span>
                         <span>Nivel: <?php echo $hijo['nivel_actual'] ?? 'Principiante'; ?></span>
                         <span>Ejercicios: <?php echo $hijo['ejercicios_completados'] ?? 0; ?></span>
+                        <?php if (!empty($hijo['grupo_nombre'])): ?>
+                            <span style="background: #4ECDC4; color: white; padding: 4px 8px; border-radius: 10px; font-size: 12px;">
+                                Grupo: <?php echo $hijo['grupo_nombre']; ?>
+                            </span>
+                        <?php else: ?>
+                            <span style="background: #FFA726; color: white; padding: 4px 8px; border-radius: 10px; font-size: 12px;">
+                                Sin grupo
+                            </span>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>

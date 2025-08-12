@@ -159,6 +159,15 @@
                         <span>Grado: <?php echo $estudiante['grado']; ?></span>
                         <span>Progreso: <?php echo $estudiante['porcentaje'] ?? 0; ?>%</span>
                         <span>Nivel: <?php echo $estudiante['nivel_actual'] ?? 'Beginner'; ?></span>
+                        <?php if (!empty($estudiante['grupo_nombre'])): ?>
+                            <span style="background: #4ECDC4; color: white; padding: 4px 8px; border-radius: 10px; font-size: 12px;">
+                                Grupo: <?php echo $estudiante['grupo_nombre']; ?>
+                            </span>
+                        <?php else: ?>
+                            <span style="background: #FFA726; color: white; padding: 4px 8px; border-radius: 10px; font-size: 12px;">
+                                Sin grupo
+                            </span>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; endif; ?>
             </div>

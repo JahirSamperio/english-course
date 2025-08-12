@@ -137,6 +137,21 @@ switch ($controller) {
             case 'guardarEvaluacionPdf':
                 $ctrl->guardarEvaluacionPdf();
                 break;
+            case 'manageGroups':
+                $ctrl->manageGroups();
+                break;
+            case 'createGroup':
+                $ctrl->createGroup();
+                break;
+            case 'assignToGroup':
+                $ctrl->assignToGroup();
+                break;
+            case 'assignEvaluationToGroup':
+                $ctrl->assignEvaluationToGroup();
+                break;
+            case 'createStudent':
+                $ctrl->createStudent();
+                break;
             default:
                 $ctrl->dashboard();
                 break;

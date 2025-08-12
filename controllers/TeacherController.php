@@ -6,6 +6,7 @@ require_once 'models/PlanEstudios.php';
 require_once 'models/EstudiantesAsignados.php';
 require_once 'models/Evaluacion.php';
 require_once 'models/Progreso.php';
+require_once 'models/Grupo.php';
 
 class TeacherController {
     private $estudianteModel;
@@ -15,6 +16,7 @@ class TeacherController {
     private $asignacionModel;
     private $evaluacionModel;
     private $progresoModel;
+    private $grupoModel;
     
     public function __construct() {
         $this->estudianteModel = new Estudiante();
@@ -24,6 +26,7 @@ class TeacherController {
         $this->asignacionModel = new EstudiantesAsignados();
         $this->evaluacionModel = new Evaluacion();
         $this->progresoModel = new Progreso();
+        $this->grupoModel = new Grupo();
     }
     
     public function dashboard() {
@@ -77,6 +80,8 @@ class TeacherController {
             'planes' => $this->planModel->getAllSimple(),
             'estudiantes' => $this->estudianteModel->getAllSimple(),
             'temas' => $this->temaModel->getAllSimple(),
+            'grupos' => $this->grupoModel->getAllSimple(),
+            'evaluaciones' => $this->evaluacionModel->getAllSimple(),
             'asignaciones' => $this->asignacionModel->getAll($page, $limit),
             'current_page' => $page,
             'total_pages' => ceil($this->asignacionModel->getCount() / $limit),
@@ -333,7 +338,11 @@ class TeacherController {
     }
     
     public function crearEvaluacionPdf() {
-        $this->loadView('teacher/crear_evaluacion_pdf');
+        $data = [
+            'grupos' => $this->grupoModel->getAllSimple(),
+            'page_title' => 'Crear Evaluación PDF'
+        ];
+        $this->loadView('teacher/crear_evaluacion_pdf', $data);
     }
     
     public function guardarEvaluacionPdf() {
@@ -345,7 +354,8 @@ class TeacherController {
                 'tiempo_limite' => $_POST['tiempo_limite'],
                 'puntos_total' => $_POST['puntos_total'],
                 'archivo_pdf' => $_POST['archivo_pdf'] ?? null,
-                'profesor_id' => $_SESSION['profesor_id'] ?? 1
+                'profesor_id' => $_SESSION['profesor_id'] ?? 1,
+                'grupo_id' => $_POST['grupo_id'] ?? null
             ];
             
             if ($this->evaluacionModel->create($data)) {
@@ -363,6 +373,98 @@ class TeacherController {
         
         header('Location: /englishdemo/?controller=teacher&action=dashboard');
         exit();
+    }
+    
+    // Métodos para gestión de grupos
+    public function manageGroups() {
+        $page = $_GET['page'] ?? 1;
+        $limit = 5;
+        $data = [
+            'grupos' => $this->grupoModel->getAll($page, $limit),
+            'current_page' => $page,
+            'total_pages' => ceil($this->grupoModel->getCount() / $limit),
+            'page_title' => 'Gestionar Grupos'
+        ];
+        $this->loadView('teacher/manage_groups', $data);
+    }
+    
+    public function createGroup() {
+        if ($_POST) {
+            $_POST['profesor_id'] = $_SESSION['profesor_id'] ?? 1;
+            if ($this->grupoModel->create($_POST)) {
+                $_SESSION['notification'] = ['type' => 'success', 'message' => 'Grupo creado exitosamente'];
+            } else {
+                $_SESSION['notification'] = ['type' => 'error', 'message' => 'Error al crear el grupo'];
+            }
+            header('Location: /englishdemo/?controller=teacher&action=panel');
+            exit();
+        }
+    }
+    
+    public function assignToGroup() {
+        if ($_POST) {
+            $grupo_id = $_POST['grupo_id'];
+            $estudiantes = $_POST['estudiantes'] ?? [];
+            
+            foreach ($estudiantes as $estudiante_id) {
+                $this->grupoModel->addStudent($grupo_id, $estudiante_id);
+            }
+            $_SESSION['notification'] = ['type' => 'success', 'message' => 'Estudiantes asignados al grupo'];
+            header('Location: /englishdemo/?controller=teacher&action=panel');
+            exit();
+        }
+    }
+    
+    public function createStudent() {
+        if ($_POST) {
+            $db = Database::getInstance()->getConnection();
+            
+            try {
+                $db->beginTransaction();
+                
+                // Crear usuario
+                $stmt = $db->prepare("INSERT INTO Usuario (nombre, email, password, tipo) VALUES (?, ?, ?, 'estudiante')");
+                $stmt->execute([$_POST['nombre'], $_POST['email'], $_POST['password']]);
+                $usuario_id = $db->lastInsertId();
+                
+                // Crear estudiante
+                $stmt = $db->prepare("INSERT INTO Estudiante (usuario_id, grado, edad, nivel_actual) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$usuario_id, $_POST['grado'], $_POST['edad'] ?? null, $_POST['grado']]);
+                $estudiante_id = $db->lastInsertId();
+                
+                // Asignar a grupo si se seleccionó
+                if (!empty($_POST['grupo_id'])) {
+                    $stmt = $db->prepare("INSERT INTO Grupo_Estudiantes (grupo_id, estudiante_id) VALUES (?, ?)");
+                    $stmt->execute([$_POST['grupo_id'], $estudiante_id]);
+                }
+                
+                $db->commit();
+                $_SESSION['notification'] = ['type' => 'success', 'message' => 'Estudiante creado exitosamente'];
+            } catch (Exception $e) {
+                $db->rollback();
+                $_SESSION['notification'] = ['type' => 'error', 'message' => 'Error al crear estudiante: ' . $e->getMessage()];
+            }
+            
+            header('Location: /englishdemo/?controller=teacher&action=panel');
+            exit();
+        }
+    }
+    
+    public function assignEvaluationToGroup() {
+        if ($_POST) {
+            $evaluacion_id = $_POST['evaluacion_id'];
+            $grupo_id = $_POST['grupo_id'];
+            
+            $stmt = Database::getInstance()->getConnection()->prepare("UPDATE Evaluacion SET grupo_id = ? WHERE id = ?");
+            
+            if ($stmt->execute([$grupo_id, $evaluacion_id])) {
+                $_SESSION['notification'] = ['type' => 'success', 'message' => 'Evaluación asignada al grupo'];
+            } else {
+                $_SESSION['notification'] = ['type' => 'error', 'message' => 'Error al asignar evaluación'];
+            }
+            header('Location: /englishdemo/?controller=teacher&action=panel');
+            exit();
+        }
     }
     
     private function loadView($view, $data = []) {
