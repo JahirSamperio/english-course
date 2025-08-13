@@ -152,6 +152,18 @@ switch ($controller) {
             case 'createStudent':
                 $ctrl->createStudent();
                 break;
+            case 'crearEstudianteCompleto':
+                $ctrl->crearEstudianteCompleto();
+                break;
+            case 'guardarEstudianteCompleto':
+                $ctrl->guardarEstudianteCompleto();
+                break;
+            case 'calificarEvaluaciones':
+                $ctrl->calificarEvaluaciones();
+                break;
+            case 'guardarCalificacion':
+                $ctrl->guardarCalificacion();
+                break;
             default:
                 $ctrl->dashboard();
                 break;

@@ -6,6 +6,7 @@
 - **XAMPP/WAMP/LAMP** - Apache + MySQL + PHP
 - **PHP 7.4+** - Required for modern features
 - **MySQL 5.7+** - Database server
+- **Composer** - PHP dependency manager (https://getcomposer.org/)
 
 ### Installation
 
@@ -28,7 +29,13 @@
    $password = 'root';
    ```
 
-4. **Access System**:
+4. **Install Dependencies**:
+   ```bash
+   cd c:\xampp\htdocs\englishdemo
+   composer install
+   ```
+   
+5. **Access System**:
    - URL: http://localhost/englishdemo/
    - Login with demo accounts (see ACCESOS.txt)
 
@@ -219,7 +226,34 @@ The system supports easy expansion:
 - **Audio Issues**: Check browser audio permissions
 - **CSS/JS Not Loading**: Verify asset paths are correct
 
+### Composer/Cloudinary Issues
+
+**Error: "Could not scan for classes inside vendor/cloudinary..."**
+
+1. **Delete vendor folder and reinstall**:
+   ```bash
+   cd c:\xampp\htdocs\englishdemo
+   rmdir /s vendor
+   composer clear-cache
+   composer install
+   ```
+
+2. **If still fails, install Cloudinary manually**:
+   ```bash
+   composer require cloudinary/cloudinary_php
+   ```
+
+3. **Alternative: Fresh installation**:
+   ```bash
+   del composer.lock
+   rmdir /s vendor
+   composer install
+   ```
+
+**Note**: Make sure you have stable internet connection during installation.
+
 ### Support
 - Check ACCESOS.txt for demo credentials
 - Verify database.sql was imported correctly
 - Ensure PHP 7.4+ and MySQL 5.7+ are installed
+- For Composer issues, ensure you have write permissions in the project folder

@@ -290,49 +290,16 @@
                 </form>
             </div>
 
-            <!-- Crear Estudiante -->
+            <!-- Crear Estudiante Completo -->
             <div class="panel-card">
                 <h3>👤 Crear Estudiante</h3>
-                <form method="POST" action="/englishdemo/?controller=teacher&action=createStudent">
-                    <div class="form-group">
-                        <label>Nombre:</label>
-                        <input type="text" name="nombre" required placeholder="Ej: Ana García">
-                    </div>
-                    <div class="form-group">
-                        <label>Email:</label>
-                        <input type="email" name="email" required placeholder="ana@email.com">
-                    </div>
-                    <div class="form-group">
-                        <label>Contraseña:</label>
-                        <input type="password" name="password" required placeholder="Mínimo 6 caracteres">
-                    </div>
-                    <div class="form-group">
-                        <label>Grado:</label>
-                        <select name="grado" required>
-                            <option value="Beginner">Beginner</option>
-                            <option value="Elementary">Elementary</option>
-                            <option value="Intermediate">Intermediate</option>
-                            <option value="Advanced">Advanced</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Edad:</label>
-                        <input type="number" name="edad" min="5" max="100" placeholder="15">
-                    </div>
-                    <div class="form-group">
-                        <label>Asignar a Grupo (opcional):</label>
-                        <select name="grupo_id">
-                            <option value="">Sin grupo</option>
-                            <?php if(isset($grupos)): foreach($grupos as $grupo): ?>
-                                <option value="<?php echo $grupo['id']; ?>">
-                                    <?php echo $grupo['nombre']; ?> (<?php echo $grupo['nivel']; ?>)
-                                </option>
-                            <?php endforeach; endif; ?>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-submit">👤 Crear Estudiante</button>
-                </form>
+                <p style="text-align: center; color: #666; margin-bottom: 20px;">Registro completo con información del padre/tutor</p>
+                <a href="/englishdemo/?controller=teacher&action=crearEstudianteCompleto" class="btn-submit" style="display: block; text-decoration: none; margin-top: auto;">
+                    👨‍👩‍👧‍👦 Crear Estudiante y Padre
+                </a>
             </div>
+            
+
 
             <!-- Asignar Evaluación a Grupo -->
             <div class="panel-card">

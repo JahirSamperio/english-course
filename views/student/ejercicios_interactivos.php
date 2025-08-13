@@ -233,9 +233,10 @@
                 const selectedOption = document.querySelector(`#exercise-${exerciseIndex} .option-btn.selected`);
                 if (selectedOption) {
                     userAnswer = selectedOption.textContent.trim();
-                    // Extraer solo la letra de la respuesta correcta
-                    const correctLetter = correctAnswer.toLowerCase();
+                    // Extraer la letra de la opción seleccionada (ej: "a) go" -> "a")
                     const userLetter = userAnswer.charAt(0).toLowerCase();
+                    // La respuesta correcta debe ser solo la letra (ej: "b")
+                    const correctLetter = correctAnswer.toLowerCase().trim();
                     isCorrect = userLetter === correctLetter;
                 }
             } else {
@@ -263,7 +264,18 @@
                     if (selectedOption) selectedOption.classList.add('correct');
                 }
             } else {
-                feedbackDiv.innerHTML = `❌ Incorrect. The correct answer is: <strong>${correctAnswer}</strong>`;
+                let displayAnswer = correctAnswer;
+                if (type === 'multiple_choice') {
+                    // Buscar la opción correcta para mostrar el texto completo
+                    const allOptions = document.querySelectorAll(`#exercise-${exerciseIndex} .option-btn`);
+                    allOptions.forEach(option => {
+                        const optionLetter = option.textContent.trim().charAt(0).toLowerCase();
+                        if (optionLetter === correctAnswer.toLowerCase()) {
+                            displayAnswer = option.textContent.trim();
+                        }
+                    });
+                }
+                feedbackDiv.innerHTML = `❌ Incorrect. The correct answer is: <strong>${displayAnswer}</strong>`;
                 feedbackDiv.className = 'feedback incorrect fade-in';
                 exerciseCard.classList.add('incorrect');
                 playSound('incorrect');

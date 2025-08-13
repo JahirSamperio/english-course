@@ -55,6 +55,16 @@ class Ejercicio {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
+    public function getByLevels($niveles) {
+        if (empty($niveles)) {
+            return [];
+        }
+        $placeholders = str_repeat('?,', count($niveles) - 1) . '?';
+        $stmt = $this->db->prepare("SELECT * FROM Ejercicio WHERE nivel IN ($placeholders) ORDER BY nivel, titulo");
+        $stmt->execute($niveles);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
     public function getByTopic($tema_id) {
         $stmt = $this->db->prepare("SELECT * FROM Ejercicio WHERE tema_id = ? ORDER BY nivel, titulo");
         $stmt->execute([$tema_id]);

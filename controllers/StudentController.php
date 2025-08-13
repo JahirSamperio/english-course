@@ -34,17 +34,21 @@ class StudentController {
         $plan = $this->estudianteModel->getAssignedPlan($estudiante_id);
         $temas = $this->temaModel->getAssignedToStudent($estudiante_id);
         
-        // Obtener ejercicios con nombre del tema usando Database
+        // Obtener ejercicios del nivel del estudiante y niveles inferiores
+        $nivel_estudiante = $estudiante['grado'] ?? 'Beginner';
+        $niveles_permitidos = $this->getNivelesPermitidos($nivel_estudiante);
+        
         require_once 'config/Database.php';
         $db = Database::getInstance()->getConnection();
+        $placeholders = str_repeat('?,', count($niveles_permitidos) - 1) . '?';
         $stmt = $db->prepare("
             SELECT e.*, t.nombre as tema_nombre 
             FROM Ejercicio e 
             LEFT JOIN Tema t ON e.tema_id = t.id 
-            WHERE e.nivel = ? 
+            WHERE e.nivel IN ($placeholders) 
             ORDER BY e.titulo
         ");
-        $stmt->execute([$estudiante['grado'] ?? 'Beginner']);
+        $stmt->execute($niveles_permitidos);
         $ejercicios = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         $data = [
@@ -62,8 +66,16 @@ class StudentController {
         $estudiante = $this->estudianteModel->getWithProgress($estudiante_id);
         $temas = $this->temaModel->getAssignedToStudent($estudiante_id);
         
-        // Filtrar por nivel del estudiante
-        $ejercicios = $this->ejercicioModel->getByLevel($estudiante['grado'] ?? 'Beginner');
+        // Obtener ejercicios del nivel del estudiante y niveles inferiores
+        $nivel_estudiante = $estudiante['grado'] ?? 'Beginner';
+        $niveles_permitidos = $this->getNivelesPermitidos($nivel_estudiante);
+        
+        require_once 'config/Database.php';
+        $db = Database::getInstance()->getConnection();
+        $placeholders = str_repeat('?,', count($niveles_permitidos) - 1) . '?';
+        $stmt = $db->prepare("SELECT * FROM Ejercicio WHERE nivel IN ($placeholders) ORDER BY RAND() LIMIT 10");
+        $stmt->execute($niveles_permitidos);
+        $ejercicios = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         $data = [
             'estudiante' => $estudiante,
@@ -73,6 +85,17 @@ class StudentController {
         ];
         
         $this->loadView('student/ejercicios_interactivos', $data);
+    }
+    
+    private function getNivelesPermitidos($nivel_estudiante) {
+        $jerarquia = ['Beginner', 'Elementary', 'Intermediate', 'Upper-Intermediate', 'Advanced'];
+        $indice = array_search($nivel_estudiante, $jerarquia);
+        
+        if ($indice === false) {
+            return ['Beginner'];
+        }
+        
+        return array_slice($jerarquia, 0, $indice + 1);
     }
     
     public function startTopic($estudiante_id) {

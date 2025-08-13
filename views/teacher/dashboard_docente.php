@@ -207,6 +207,12 @@
         </div>
         
         <div class="card">
+            <h3>📝 Calificar Evaluaciones</h3>
+            <p>Asignar calificaciones a evaluaciones</p>
+            <a href="/englishdemo/?controller=teacher&action=calificarEvaluaciones" class="btn">✏️ Calificar</a>
+        </div>
+        
+        <div class="card">
             <h3>📝 Ejercicios Múltiples</h3>
             <p>Crear hasta 10 ejercicios de una vez</p>
             <a href="/englishdemo/?controller=teacher&action=crearEjerciciosMultiples" class="btn">⚡ Crear Múltiples</a>

@@ -301,12 +301,13 @@ class TeacherController {
     
     public function guardarEjerciciosMultiples() {
         if ($_POST && isset($_POST['ejercicios'])) {
-            $tema_id = $_POST['tema_id'];
+            $tema_id = empty($_POST['tema_id']) ? null : $_POST['tema_id'];
             $nivel = $_POST['nivel'];
             $ejercicios = $_POST['ejercicios'];
             $guardados = 0;
+            $errores = [];
             
-            foreach ($ejercicios as $ejercicio) {
+            foreach ($ejercicios as $index => $ejercicio) {
                 $data = [
                     'titulo' => $ejercicio['titulo'],
                     'contenido' => $ejercicio['contenido'],
@@ -319,17 +320,26 @@ class TeacherController {
                 
                 if ($this->ejercicioModel->create($data)) {
                     $guardados++;
+                } else {
+                    $errores[] = "Ejercicio " . ($index + 1) . ": " . $ejercicio['titulo'];
                 }
             }
             
-            $_SESSION['notification'] = [
-                'type' => 'success', 
-                'message' => "$guardados ejercicios creados exitosamente"
-            ];
+            if ($guardados > 0) {
+                $_SESSION['notification'] = [
+                    'type' => 'success', 
+                    'message' => "$guardados ejercicios creados exitosamente" . (!empty($errores) ? ". Errores: " . implode(', ', $errores) : "")
+                ];
+            } else {
+                $_SESSION['notification'] = [
+                    'type' => 'error', 
+                    'message' => 'Error: No se pudo crear ningún ejercicio. ' . implode(', ', $errores)
+                ];
+            }
         } else {
             $_SESSION['notification'] = [
                 'type' => 'error', 
-                'message' => 'Error: No se recibieron ejercicios'
+                'message' => 'Error: No se recibieron ejercicios válidos'
             ];
         }
         
@@ -347,26 +357,84 @@ class TeacherController {
     
     public function guardarEvaluacionPdf() {
         if ($_POST) {
-            $data = [
-                'titulo' => $_POST['titulo'],
-                'descripcion' => $_POST['descripcion'],
-                'fecha' => $_POST['fecha'],
-                'tiempo_limite' => $_POST['tiempo_limite'],
-                'puntos_total' => $_POST['puntos_total'],
-                'archivo_pdf' => $_POST['archivo_pdf'] ?? null,
-                'profesor_id' => $_SESSION['profesor_id'] ?? 1,
-                'grupo_id' => $_POST['grupo_id'] ?? null
-            ];
+            $grupo_id = $_POST['grupo_id'] ?? null;
+            $db = Database::getInstance()->getConnection();
             
-            if ($this->evaluacionModel->create($data)) {
-                $_SESSION['notification'] = [
-                    'type' => 'success',
-                    'message' => 'Evaluación con PDF creada exitosamente'
-                ];
-            } else {
+            try {
+                $db->beginTransaction();
+                
+                if ($grupo_id) {
+                    // Obtener estudiantes del grupo
+                    $stmt = $db->prepare("
+                        SELECT e.id as estudiante_id
+                        FROM Grupo_Estudiantes ge 
+                        JOIN Estudiante e ON ge.estudiante_id = e.id 
+                        WHERE ge.grupo_id = ?
+                    ");
+                    $stmt->execute([$grupo_id]);
+                    $estudiantes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    
+                    $evaluaciones_creadas = 0;
+                    
+                    // Crear una evaluación para cada estudiante del grupo
+                    foreach ($estudiantes as $estudiante) {
+                        $stmt = $db->prepare("
+                            INSERT INTO Evaluacion 
+                            (titulo, descripcion, fecha, tiempo_limite, puntos_total, estudiante_id, profesor_id, grupo_id, archivo_pdf) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ");
+                        
+                        $stmt->execute([
+                            $_POST['titulo'],
+                            $_POST['descripcion'],
+                            $_POST['fecha'],
+                            $_POST['tiempo_limite'],
+                            $_POST['puntos_total'],
+                            $estudiante['estudiante_id'],
+                            $_SESSION['profesor_id'] ?? 1,
+                            $grupo_id,
+                            $_POST['archivo_pdf'] ?? null
+                        ]);
+                        
+                        $evaluaciones_creadas++;
+                    }
+                    
+                    $db->commit();
+                    $_SESSION['notification'] = [
+                        'type' => 'success',
+                        'message' => "Evaluación PDF creada. Se generaron $evaluaciones_creadas evaluaciones individuales para los estudiantes del grupo."
+                    ];
+                } else {
+                    // Crear evaluación sin grupo (individual)
+                    $data = [
+                        'titulo' => $_POST['titulo'],
+                        'descripcion' => $_POST['descripcion'],
+                        'fecha' => $_POST['fecha'],
+                        'tiempo_limite' => $_POST['tiempo_limite'],
+                        'puntos_total' => $_POST['puntos_total'],
+                        'archivo_pdf' => $_POST['archivo_pdf'] ?? null,
+                        'profesor_id' => $_SESSION['profesor_id'] ?? 1,
+                        'grupo_id' => null
+                    ];
+                    
+                    if ($this->evaluacionModel->create($data)) {
+                        $_SESSION['notification'] = [
+                            'type' => 'success',
+                            'message' => 'Evaluación PDF individual creada exitosamente'
+                        ];
+                    } else {
+                        $_SESSION['notification'] = [
+                            'type' => 'error',
+                            'message' => 'Error al crear la evaluación'
+                        ];
+                    }
+                }
+                
+            } catch (Exception $e) {
+                $db->rollback();
                 $_SESSION['notification'] = [
                     'type' => 'error',
-                    'message' => 'Error al crear la evaluación'
+                    'message' => 'Error: ' . $e->getMessage()
                 ];
             }
         }
@@ -450,21 +518,227 @@ class TeacherController {
         }
     }
     
+    public function crearEstudianteCompleto() {
+        $data = [
+            'grupos' => $this->grupoModel->getAllSimple(),
+            'page_title' => 'Crear Estudiante y Padre'
+        ];
+        $this->loadView('teacher/crear_estudiante_completo', $data);
+    }
+    
+    public function guardarEstudianteCompleto() {
+        if ($_POST && isset($_POST['estudiante']) && isset($_POST['padre'])) {
+            $db = Database::getInstance()->getConnection();
+            
+            try {
+                $db->beginTransaction();
+                
+                $estudiante = $_POST['estudiante'];
+                $padre = $_POST['padre'];
+                
+                // Verificar que los emails sean diferentes
+                if ($estudiante['email'] === $padre['email']) {
+                    throw new Exception('El email del estudiante y del padre deben ser diferentes');
+                }
+                
+                // Crear usuario estudiante
+                $stmt = $db->prepare("INSERT INTO Usuario (nombre, email, password, tipo) VALUES (?, ?, ?, 'estudiante')");
+                $stmt->execute([$estudiante['nombre'], $estudiante['email'], $estudiante['password']]);
+                $estudiante_usuario_id = $db->lastInsertId();
+                
+                // Crear estudiante
+                $stmt = $db->prepare("INSERT INTO Estudiante (usuario_id, grado, edad, nivel_actual) VALUES (?, ?, ?, ?)");
+                $stmt->execute([$estudiante_usuario_id, $estudiante['grado'], $estudiante['edad'] ?? null, $estudiante['grado']]);
+                $estudiante_id = $db->lastInsertId();
+                
+                // Crear usuario padre
+                $stmt = $db->prepare("INSERT INTO Usuario (nombre, email, password, tipo) VALUES (?, ?, ?, 'padre')");
+                $stmt->execute([$padre['nombre'], $padre['email'], $padre['password']]);
+                $padre_usuario_id = $db->lastInsertId();
+                
+                // Crear padre
+                $stmt = $db->prepare("INSERT INTO Padre (usuario_id, telefono) VALUES (?, ?)");
+                $stmt->execute([$padre_usuario_id, $padre['telefono'] ?? null]);
+                $padre_id = $db->lastInsertId();
+                
+                // Crear relación hijo-padre
+                $stmt = $db->prepare("INSERT INTO Hijo (padre_id, estudiante_id) VALUES (?, ?)");
+                $stmt->execute([$padre_id, $estudiante_id]);
+                
+                // Asignar estudiante a grupo si se seleccionó
+                if (!empty($estudiante['grupo_id'])) {
+                    $stmt = $db->prepare("INSERT INTO Grupo_Estudiantes (grupo_id, estudiante_id) VALUES (?, ?)");
+                    $stmt->execute([$estudiante['grupo_id'], $estudiante_id]);
+                }
+                
+                // Crear progreso inicial para el estudiante
+                $stmt = $db->prepare("INSERT INTO Progreso (estudiante_id, ejercicios_completados, ejercicios_correctos, porcentaje, nivel_actual, puntos_acumulados, racha_dias) VALUES (?, 0, 0, 0.00, ?, 0, 0)");
+                $stmt->execute([$estudiante_id, $estudiante['grado']]);
+                
+                $db->commit();
+                $_SESSION['notification'] = [
+                    'type' => 'success', 
+                    'message' => 'Estudiante y padre creados exitosamente. Estudiante: ' . $estudiante['nombre'] . ', Padre: ' . $padre['nombre']
+                ];
+                
+            } catch (Exception $e) {
+                $db->rollback();
+                $_SESSION['notification'] = [
+                    'type' => 'error', 
+                    'message' => 'Error al crear estudiante y padre: ' . $e->getMessage()
+                ];
+            }
+            
+            header('Location: /englishdemo/?controller=teacher&action=panel');
+            exit();
+        } else {
+            $_SESSION['notification'] = [
+                'type' => 'error', 
+                'message' => 'Error: Datos incompletos para crear estudiante y padre'
+            ];
+            header('Location: /englishdemo/?controller=teacher&action=panel');
+            exit();
+        }
+    }
+    
     public function assignEvaluationToGroup() {
         if ($_POST) {
             $evaluacion_id = $_POST['evaluacion_id'];
             $grupo_id = $_POST['grupo_id'];
             
-            $stmt = Database::getInstance()->getConnection()->prepare("UPDATE Evaluacion SET grupo_id = ? WHERE id = ?");
+            $db = Database::getInstance()->getConnection();
             
-            if ($stmt->execute([$grupo_id, $evaluacion_id])) {
-                $_SESSION['notification'] = ['type' => 'success', 'message' => 'Evaluación asignada al grupo'];
-            } else {
-                $_SESSION['notification'] = ['type' => 'error', 'message' => 'Error al asignar evaluación'];
+            try {
+                $db->beginTransaction();
+                
+                // Obtener datos de la evaluación original
+                $stmt = $db->prepare("SELECT * FROM Evaluacion WHERE id = ?");
+                $stmt->execute([$evaluacion_id]);
+                $evaluacion_original = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                // Obtener estudiantes del grupo
+                $stmt = $db->prepare("
+                    SELECT e.id as estudiante_id
+                    FROM Grupo_Estudiantes ge 
+                    JOIN Estudiante e ON ge.estudiante_id = e.id 
+                    WHERE ge.grupo_id = ?
+                ");
+                $stmt->execute([$grupo_id]);
+                $estudiantes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                $evaluaciones_creadas = 0;
+                
+                // Crear una evaluación para cada estudiante del grupo
+                foreach ($estudiantes as $estudiante) {
+                    $stmt = $db->prepare("
+                        INSERT INTO Evaluacion 
+                        (titulo, descripcion, fecha, tiempo_limite, puntos_total, estudiante_id, profesor_id, grupo_id, archivo_pdf) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ");
+                    
+                    $stmt->execute([
+                        $evaluacion_original['titulo'],
+                        $evaluacion_original['descripcion'],
+                        $evaluacion_original['fecha'],
+                        $evaluacion_original['tiempo_limite'],
+                        $evaluacion_original['puntos_total'],
+                        $estudiante['estudiante_id'],
+                        $evaluacion_original['profesor_id'],
+                        $grupo_id,
+                        $evaluacion_original['archivo_pdf']
+                    ]);
+                    
+                    $evaluaciones_creadas++;
+                }
+                
+                $db->commit();
+                $_SESSION['notification'] = [
+                    'type' => 'success', 
+                    'message' => "Se crearon $evaluaciones_creadas evaluaciones individuales. Estudiantes encontrados: " . count($estudiantes) . ". Grupo ID: $grupo_id"
+                ];
+                
+            } catch (Exception $e) {
+                $db->rollback();
+                $_SESSION['notification'] = [
+                    'type' => 'error', 
+                    'message' => 'Error: ' . $e->getMessage()
+                ];
             }
+            
             header('Location: /englishdemo/?controller=teacher&action=panel');
             exit();
         }
+    }
+    
+    public function calificarEvaluaciones() {
+        $page = $_GET['page'] ?? 1;
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+        
+        $db = Database::getInstance()->getConnection();
+        
+        // Obtener evaluaciones con información del estudiante
+        $stmt = $db->prepare("
+            SELECT e.*, u.nombre as estudiante_nombre
+            FROM Evaluacion e
+            LEFT JOIN Estudiante est ON e.estudiante_id = est.id
+            LEFT JOIN Usuario u ON est.usuario_id = u.id
+            ORDER BY e.fecha DESC, e.id DESC
+            LIMIT $limit OFFSET $offset
+        ");
+        $stmt->execute();
+        $evaluaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Contar total para paginación
+        $stmt = $db->query("SELECT COUNT(*) as total FROM Evaluacion");
+        $total = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+        
+        $data = [
+            'evaluaciones' => $evaluaciones,
+            'current_page' => $page,
+            'total_pages' => ceil($total / $limit),
+            'page_title' => 'Calificar Evaluaciones'
+        ];
+        
+        $this->loadView('teacher/calificar_evaluaciones', $data);
+    }
+    
+    public function guardarCalificacion() {
+        if ($_POST && isset($_POST['evaluacion_id']) && isset($_POST['calificacion'])) {
+            $evaluacion_id = $_POST['evaluacion_id'];
+            $calificacion = floatval($_POST['calificacion']);
+            
+            // Validar rango de calificación
+            if ($calificacion < 0 || $calificacion > 100) {
+                $_SESSION['notification'] = [
+                    'type' => 'error',
+                    'message' => 'La calificación debe estar entre 0 y 100'
+                ];
+            } else {
+                $db = Database::getInstance()->getConnection();
+                $stmt = $db->prepare("UPDATE Evaluacion SET resultado = ? WHERE id = ?");
+                
+                if ($stmt->execute([$calificacion, $evaluacion_id])) {
+                    $_SESSION['notification'] = [
+                        'type' => 'success',
+                        'message' => 'Calificación guardada exitosamente: ' . $calificacion . '%'
+                    ];
+                } else {
+                    $_SESSION['notification'] = [
+                        'type' => 'error',
+                        'message' => 'Error al guardar la calificación'
+                    ];
+                }
+            }
+        } else {
+            $_SESSION['notification'] = [
+                'type' => 'error',
+                'message' => 'Datos incompletos para guardar calificación'
+            ];
+        }
+        
+        header('Location: /englishdemo/?controller=teacher&action=calificarEvaluaciones');
+        exit();
     }
     
     private function loadView($view, $data = []) {
