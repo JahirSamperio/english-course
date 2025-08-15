@@ -4,10 +4,10 @@ class Database {
     private $pdo;
     
     private function __construct() {
-        $host = 'localhost';
-        $dbname = 'english_learning_system';
-        $username = 'root';
-        $password = 'root';
+        $host = $_ENV['DB_HOST'] ?? 'localhost';
+        $dbname = $_ENV['DB_NAME'] ?? 'english_learning_system';
+        $username = $_ENV['DB_USER'] ?? 'root';
+        $password = $_ENV['DB_PASS'] ?? 'root';
         
         try {
             $this->pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
